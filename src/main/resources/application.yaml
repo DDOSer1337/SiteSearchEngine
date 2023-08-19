@@ -1,0 +1,31 @@
+spring:
+  DataSource:
+    url: jdbc:mysql://localhost:3306/skillbox?useSSL=false&allowPublicKeyRetrieval=true&useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC
+    username: root
+    password: Server.2002.name
+    driverClassName: com.mysql.cj.jdbc.Driver
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+    mysql:
+      cj:
+        jdbc:
+          Driver:
+
+indexing-settings:
+  sites:
+    - url: https://www.lenta.ru
+      name: lenta.ru
+    - url: https://www.skillbox.ru
+      name: skillbox.ru
+    - url: https://www.playback.ru
+      name: PlayBack.Ru
+logging:
+  level:
+    org:
+      hibernate:
+        type: info
