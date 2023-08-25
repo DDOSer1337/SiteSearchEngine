@@ -10,7 +10,7 @@ import java.util.List;
 
 @Repository
 public interface IndexRepository extends CrudRepository<Index,Long> {
-    @Query(value ="SELECT CASE WHEN frequency > 0 THEN true ELSE false END FROM skillbox.indices WHERE pages_id = :pageID and lemmas_id = :lemmaID",nativeQuery = true)
+    @Query(value ="SELECT CASE WHEN count(*) >0 THEN 'true' ELSE 'false' END as `boolean` FROM skillbox.indices WHERE pages_id = :pageID and lemmas_id = :lemmaID",nativeQuery = true)
     boolean isExist(@Param("pageID") int pageID, @Param("lemmaID") int lemmasID);
 
     @Query(value ="Select * from skillbox.indices where pages_id = :pageID and lemmas_id = :lemmaID",nativeQuery = true)

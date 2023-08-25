@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 import searchengine.model.Lemma;
 
 import java.util.Optional;
@@ -15,10 +16,11 @@ public interface LemmaRepository extends CrudRepository<Lemma,Long> {
     @Query(value ="Select * from skillbox.lemmas where WHERE lemma = :lemma and sites_id = :sitesID",nativeQuery = true)
     Optional<Lemma> getByLemma(@Param("lemma") String lemma, @Param("sitesID") int sitesID);
 
-    @Query(value ="SELECT CASE WHEN frequency > 0 THEN true ELSE false END FROM skillbox.lemmas WHERE lemma = :lemma and sites_id = :sitesID",nativeQuery = true)
+    @Query(value ="SELECT CASE WHEN count(*) >0 THEN 'true' ELSE 'false' END as `boolean` FROM skillbox.lemmas WHERE lemma = :lemma and sites_id = :sitesID",nativeQuery = true)
     boolean isExist(@Param("lemma") String lemma, @Param("sitesID") int sitesID);
 
     @Modifying
+    @Transactional
     @Query(value ="UPDATE skillbox.lemmas SET `frequency` = `frequency` + 1 WHERE lemma = :lemma and sites_id = :sitesID",nativeQuery = true)
     void updateFrequency(@Param("lemma") String lemma, @Param("sitesID") int sitesID);
 
@@ -28,6 +30,6 @@ public interface LemmaRepository extends CrudRepository<Lemma,Long> {
     @Query(value ="Select Count(*) from skillbox.lemmas as l Join skillbox.sites as s on l.sites_id = s.id where s.name = :siteName",nativeQuery = true)
     Integer getLemmaCount(@Param("siteName") String siteName);
 
-    @Query(value ="SELECT sum(frequency) FROM skillbox.lemmas")
+    @Query(value ="SELECT sum(frequency) FROM skillbox.lemmas",nativeQuery = true)
     Integer getAllLemmaCount ();
 }
