@@ -5,6 +5,7 @@ import lombok.Setter;
 import searchengine.model.Enum.SiteStatus;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
@@ -12,7 +13,7 @@ import java.util.Objects;
 @Getter
 @Entity
 @Table(name = "sites")
-public class Site {
+public class Site implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -41,7 +42,11 @@ public class Site {
         this.siteStatus = SiteStatus.INDEXING;
         this.statusTime = LocalDateTime.now();
         this.url = url;
-        this.name = name;
+        if (name.startsWith("www.")) {
+            this.name = name.substring(4);
+        } else {
+            this.name = name;
+        }
         this.lastError = "";
     }
 
