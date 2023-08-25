@@ -14,8 +14,13 @@ public class Lucene {
     }
 
     public LuceneMorphology getLuceneMorphology() throws IOException {
-        return isRussian() ? new RussianLuceneMorphology()
-                : isEnglish() ? new EnglishLuceneMorphology() : null;
+        if (isNotPartOfSpeech()) {
+            return isRussian() ? new RussianLuceneMorphology()
+                    : isEnglish() ? new EnglishLuceneMorphology() : null;
+        }
+        else {
+            return null;
+        }
     }
 
     boolean isRussian() {
@@ -27,7 +32,8 @@ public class Lucene {
     }
 
     public boolean isNotPartOfSpeech() {
-        return !(word.endsWith("Н") || word.endsWith("МЕЖД") || word.endsWith("СОЮЗ") ||
+        return !(word.endsWith("Н") || word.endsWith("МЕЖД") || word.endsWith("СОЮЗ") || word.endsWith("ПРЕДЛ") ||
+                word.endsWith("ЧАСТ") ||
                 word.endsWith("PREP") || word.endsWith("ADJECTIVE") || word.endsWith("CONJ") ||
                 word.endsWith("ARTICLE") || word.endsWith("ADVERB"));
     }
