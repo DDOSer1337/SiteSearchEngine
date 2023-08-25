@@ -1,12 +1,13 @@
 package searchengine.Busines.LinkHandling;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import searchengine.dto.FailedResult;
+import org.springframework.stereotype.Service;
+import searchengine.config.SitesList;
 import searchengine.dto.Result;
 import searchengine.model.Site;
+import searchengine.repositories.IndexRepository;
+import searchengine.repositories.LemmaRepository;
+import searchengine.repositories.PageRepository;
 import searchengine.repositories.SiteRepository;
 
 import java.util.Collections;
@@ -16,55 +17,41 @@ import java.util.Set;
 
 import static searchengine.services.IndexingImpl.atomicBoolean;
 
+@Service
 @RequiredArgsConstructor
 public class LinkParser {
     private String domain;
     private Set<String> verifiedLinks = Collections.synchronizedSet(new HashSet<>());
-    private final String url;
-    @Autowired
-    private SiteRepository siteRepository;
-    List<LinkCrawler> list;
+    private final SitesList sitesList;
+    private final SiteRepository siteRepository;
+    private final PageRepository pageRepository;
+    private final LemmaRepository lemmaRepository;
+    private final IndexRepository indexRepository;
 
-    public ResponseEntity<?> startParse() {
+
+    public void startParse() {
+        List<searchengine.config.Site> listSites = sitesList.getSites();
         Result result = new Result();
         result.setResult(atomicBoolean.get());
-        if (!result.isResult() && isURL()) {
-            atomicBoolean.getAndSet(true);
-            domain = url.split("/")[2];
-            Site site = new Site(url, domain);
-            if (siteRepository.isExist(site.getName())) {
-                siteRepository.deleteByName(site.getName());
+        for (searchengine.config.Site siteFromList : listSites) {
+            String url = siteFromList.getUrl();
+            if (!result.isResult() && isURL(url)) {
+                atomicBoolean.getAndSet(true);
+                domain = url.split("/")[2];
+                Site site = new Site(url, domain);
+                if (siteRepository.isExist(site.getName())) {
+                    siteRepository.deleteByName(site.getName());
+                    System.out.println("Удалено " + site.getName());
+                }
+                siteRepository.save(site);
+                LinkCrawler linkCrawler = new LinkCrawler(domain, url, verifiedLinks, site,siteRepository,pageRepository,lemmaRepository,indexRepository);
+                linkCrawler.compute();
             }
-            siteRepository.save(site);
-            LinkCrawler linkCrawler = new LinkCrawler(domain, url, verifiedLinks, site);
-            linkCrawler.compute();
-            list.add(linkCrawler);
-            result.setResult(true);
-            return ResponseEntity.status(HttpStatus.OK).body(result);
-        } else {
-            FailedResult failedResult = new FailedResult();
-            failedResult.setResult(result);
-            failedResult.setError("");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(failedResult);
         }
     }
 
-    public ResponseEntity<?> stopParse() {
-        Result result = new Result();
-        result.setResult(atomicBoolean.get());
-        if (result.isResult()) {
-            atomicBoolean.getAndSet(false);
-            return ResponseEntity.status(HttpStatus.OK).body(result);
-        } else {
-            FailedResult failedResult = new FailedResult();
-            failedResult.setResult(result);
-            failedResult.setError("");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(failedResult);
-        }
-    }
-
-    public boolean isURL() {
-        return url != null && (url.matches("^(https?)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]"));
+    private boolean isURL(String url) {
+        return url != null && (url.matches("^(https?)://(www.)?[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]"));
     }
 
 }
