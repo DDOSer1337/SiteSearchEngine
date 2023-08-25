@@ -18,10 +18,7 @@ import searchengine.repositories.PageRepository;
 import searchengine.repositories.SiteRepository;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.RecursiveAction;
 
 import static searchengine.services.IndexingImpl.atomicBoolean;
@@ -30,17 +27,15 @@ import static searchengine.services.IndexingImpl.atomicBoolean;
 public class LinkCrawler extends RecursiveAction {
     private final String domain, currentLink;
     private final Set<String> verifiedLinks;
-
     private final Site site;
-
     @Autowired
-    private SiteRepository siteRepository;
+    private final SiteRepository siteRepository;
     @Autowired
-    private PageRepository pageRepository;
+    private final PageRepository pageRepository;
     @Autowired
-    private LemmaRepository lemmaRepository;
+    private final LemmaRepository lemmaRepository;
     @Autowired
-    private IndexRepository indexRepository;
+    private final IndexRepository indexRepository;
 
 
     @Override
@@ -69,11 +64,11 @@ public class LinkCrawler extends RecursiveAction {
     }
 
     private void exceptionSite(Site site) {
-
+        //напишу код позже
     }
 
     private void recursiveActionFork(String newLink, Connection connection) throws IOException {
-        Site site = siteRepository.getSiteByName(domain);
+        Site site = siteRepository.getSiteByName(domain.substring(4));
         Page page = new Page(newLink, connection.get(), domain, site, connection.execute().statusCode());
         if (!pageRepository.isExist(page.getPath(), site.getId())) {
             pageRepository.save(page);
@@ -86,7 +81,7 @@ public class LinkCrawler extends RecursiveAction {
                     } else {
                         indexRepository.save(index);
                     }
-                    LinkCrawler linkCrawler = new LinkCrawler(domain,newLink,verifiedLinks,site);
+                    LinkCrawler linkCrawler = new LinkCrawler(domain, newLink, verifiedLinks, site, siteRepository, pageRepository, lemmaRepository, indexRepository);
                     linkCrawler.fork();
                 }
             }
@@ -95,14 +90,17 @@ public class LinkCrawler extends RecursiveAction {
 
     private List<Lemma> getLemmas(Document document) {
         List<Lemma> list = new ArrayList<>();
-        String[] allText = document.text().split(" ");
+        List<String> allText = Arrays.stream(document.text().split(" ")).toList();
+
         for (String textWord : allText) {
-            try {
-                Lemma lemma = createLemma(textWord);
-                list.add(lemma);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+                try {
+                    Lemma lemma = createLemma(textWord);
+                    if (lemma != null) {
+                        list.add(lemma);
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
         }
         return list;
     }
@@ -110,16 +108,19 @@ public class LinkCrawler extends RecursiveAction {
     private Lemma createLemma(String textWord) throws IOException {
         String word2lower = textWord.toLowerCase(Locale.ROOT).trim();
         LuceneMorphology luceneMorphology = new Lucene(word2lower).getLuceneMorphology();
-        String word = luceneMorphology.getNormalForms(word2lower).get(0);
-        Lemma lemma = new Lemma();
-        lemma.setLemma(word);
-        lemma.setSiteId(site);
-        if (!lemmaRepository.isExist(lemma.getLemma(), lemma.getSiteId().getId())) {
-            lemma.setFrequency(1);
-            lemmaRepository.save(lemma);
-        } else {
-            lemmaRepository.updateFrequency(lemma.getLemma(), lemma.getSiteId().getId());
+        if (luceneMorphology != null && textWord.matches("^([a-zа-яё]+|\\d+)$")) {
+            String word = luceneMorphology.getNormalForms(word2lower).get(0);
+            Lemma lemma = new Lemma();
+            lemma.setLemma(word);
+            lemma.setSiteId(site);
+            if (!lemmaRepository.isExist(lemma.getLemma(), lemma.getSiteId().getId())) {
+                lemma.setFrequency(1);
+                lemmaRepository.save(lemma);
+            } else {
+                lemmaRepository.updateFrequency(lemma.getLemma(), lemma.getSiteId().getId());
+            }
+            return lemma;
         }
-        return lemma;
+        return null;
     }
 }
