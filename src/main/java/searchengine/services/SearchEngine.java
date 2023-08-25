@@ -1,4 +1,4 @@
-package searchengine.services.Interface;
+package searchengine.services;
 
 public interface SearchEngine {
     void findIn(String siteName,String[] word);
