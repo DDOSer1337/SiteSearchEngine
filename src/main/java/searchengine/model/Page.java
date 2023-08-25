@@ -7,17 +7,18 @@ import org.jsoup.nodes.Document;
 
 import javax.persistence.*;
 import javax.persistence.Index;
+import java.io.Serializable;
 
 @Getter
 @Setter
 @Entity
 @Table(name = "pages",indexes = @Index(columnList = "path"))
-public class Page {
+public class Page implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @ManyToOne(cascade = CascadeType.MERGE)
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "sites_id")
     private Site siteId;
 
@@ -35,9 +36,7 @@ public class Page {
     }
 
     public Page(String newLink, Document document,String domain,Site siteId, Integer code) {
-        int start = newLink.indexOf(domain) + domain.length();
-        int end = newLink.length();
-        this.path = newLink.substring(start, end);
+        this.path = newLink;
         this.content = document.toString();
         this.siteId = siteId;
         this.code = code;
