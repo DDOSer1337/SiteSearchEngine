@@ -14,11 +14,12 @@ import searchengine.model.Site;
 import searchengine.repositories.LemmaRepository;
 import searchengine.repositories.PageRepository;
 import searchengine.repositories.SiteRepository;
+import searchengine.services.Interface.StatisticsService;
 
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -37,6 +38,7 @@ public class StatisticsServiceImpl implements StatisticsService {
             "Ошибка индексации: сайт не доступен",
             ""
     };
+
     @Override
     public StatisticsResponse getStatistics() {
         DBConnector dbConnector = new DBConnector();
@@ -52,39 +54,41 @@ public class StatisticsServiceImpl implements StatisticsService {
         StatisticsResponse response = new StatisticsResponse();
         StatisticsData data = new StatisticsData();
         try {
-            totalStatistics.setPages(pageRepository.getAllPageCount());
-            totalStatistics.setLemmas(lemmaRepository.getAllLemmaCount());
+            long pageCount = pageRepository.count();
+            long lemmaCount = lemmaRepository.count();
+            totalStatistics.setPages((int) pageCount);
+            totalStatistics.setLemmas((int) (lemmaCount));
             data.setTotal(totalStatistics);
             data.setDetailed(detailed);
             response.setStatistics(data);
             response.setResult(true);
             connection.close();
+
         } catch (Exception e) {
             totalStatistics.setPages(0);
             totalStatistics.setLemmas(0);
             data.setTotal(totalStatistics);
             data.setDetailed(detailed);
             response.setStatistics(data);
-            response.setResult(true); // временная затычка
+            response.setResult(true);
             e.printStackTrace();
         }
         return response;
     }
-    private DetailedStatisticsItem getDetailedStatisticsItem(searchengine.config.Site sites)
-    {
+
+    private DetailedStatisticsItem getDetailedStatisticsItem(searchengine.config.Site sites) {
         DetailedStatisticsItem item = new DetailedStatisticsItem();
         System.out.println(sites.getName());
-        try {
-            Site site = siteRepository.getSiteByName(sites.getName());
-            item.setStatusTime(site.getStatusTime().getNano());
-            item.setStatus(site.getSiteStatus().toString());
+        Optional<Site> site = Optional.ofNullable(siteRepository.findByName(sites.getName()));
+        if (site.isPresent()) {
+            item.setStatusTime(site.get().getStatusTime().getNano());
+            item.setStatus(site.get().getSiteStatus().toString());
             item.setName(sites.getName());
-            item.setError(site.getLastError());
-            item.setUrl(site.getUrl());
-            item.setLemmas(lemmaRepository.getLemmaCount(site.getName()));
-            item.setPages(pageRepository.getPageCount(site.getName()));
-        }
-        catch (Exception e){
+            item.setError(site.get().getLastError());
+            item.setUrl(site.get().getUrl());
+            item.setLemmas((int) lemmaRepository.countBySiteId_Name(site.get().getName()));
+            item.setPages((int) pageRepository.countBySiteId_Name(site.get().getName()));
+        } else {
             item.setStatusTime(0);
             item.setStatus("");
             item.setName(sites.getName());

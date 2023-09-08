@@ -7,12 +7,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import searchengine.Busines.LinkHandling.LinkParser;
 import searchengine.config.SitesList;
-import searchengine.dto.FailedResult;
-import searchengine.dto.Result;
+import searchengine.dto.result.FailedResult;
+import searchengine.dto.result.Result;
+import searchengine.dto.result.SuccessResult;
 import searchengine.repositories.IndexRepository;
 import searchengine.repositories.LemmaRepository;
 import searchengine.repositories.PageRepository;
 import searchengine.repositories.SiteRepository;
+import searchengine.services.Interface.Indexing;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -32,34 +34,34 @@ public class IndexingImpl implements Indexing {
 
     @Override
     public ResponseEntity<?> stop() {
-        ResponseEntity<?> responseEntity;
         Result result = new Result();
         result.setResult(atomicBoolean.get());
         if (result.isResult()){
-            responseEntity = ResponseEntity.status(HttpStatus.OK).body(true);
             atomicBoolean.getAndSet(false);
+            SuccessResult successResult = new SuccessResult();
+            successResult.setResult(result);
+            return ResponseEntity.status(HttpStatus.OK).body(successResult);
         }
         else {
             FailedResult failedResult = new FailedResult();
             failedResult.setResult(result);
-            failedResult.setError("Indexing not started");
-            responseEntity = ResponseEntity.status(HttpStatus.NOT_FOUND).body(failedResult);
+            failedResult.setError("indexing not started");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(failedResult);
         }
-        return responseEntity;
     }
 
     @Override
     public ResponseEntity<?> start() {
         Result result = new Result();
-        result.setResult(true);
-        ResponseEntity.status(HttpStatus.OK).body(result);
         if (!atomicBoolean.get()){
             result.setResult(true);
             LinkParser linkParser = new LinkParser(sitesList,siteRepository,pageRepository,lemmaRepository,indexRepository);
             linkParser.startParse();
-
-            return ResponseEntity.status(HttpStatus.OK).body(result);
+            SuccessResult successResult = new SuccessResult();
+            successResult.setResult(result);
+            return ResponseEntity.status(HttpStatus.OK).body(successResult);
         }else {
+            result.setResult(false);
             FailedResult failedResult = new FailedResult();
             failedResult.setResult(result);
             failedResult.setError("indexing started");

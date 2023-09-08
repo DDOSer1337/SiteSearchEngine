@@ -68,21 +68,23 @@ public class LinkCrawler extends RecursiveAction {
     }
 
     private void recursiveActionFork(String newLink, Connection connection) throws IOException {
-        Site site = siteRepository.getSiteByName(domain.substring(4));
-        Page page = new Page(newLink, connection.get(), domain, site, connection.execute().statusCode());
-        if (!pageRepository.isExist(page.getPath(), site.getId())) {
-            pageRepository.save(page);
-            List<Lemma> list = getLemmas(connection.get());
-            for (Lemma lemma : list) {
-                if (atomicBoolean.get()) {
-                    Index index = new Index();
-                    if (!indexRepository.isExist(page.getId(), lemma.getId())) {
-                        indexRepository.updateRank(page.getId(), lemma.getId());
-                    } else {
-                        indexRepository.save(index);
+        Optional<Site> site = Optional.ofNullable(siteRepository.findByName(domain.substring(4)));
+        if (site.isPresent()) {
+            Page page = new Page(newLink, connection.get(), domain, site.get(), connection.execute().statusCode());
+            if (!pageRepository.existsByPathAndSiteId_id(page.getPath(), site.get().getId())) {
+                pageRepository.save(page);
+                List<Lemma> list = getLemmas(connection.get());
+                for (Lemma lemma : list) {
+                    if (atomicBoolean.get()) {
+                        Index index = new Index();
+                        if (!indexRepository.existsByLemmaIdAndPageId(page.getId(), lemma.getId())) {
+                            indexRepository.upRank(page.getId(), lemma.getId());
+                        } else {
+                            indexRepository.save(index);
+                        }
+                        LinkCrawler linkCrawler = new LinkCrawler(domain, newLink, verifiedLinks, site.get(), siteRepository, pageRepository, lemmaRepository, indexRepository);
+                        linkCrawler.fork();
                     }
-                    LinkCrawler linkCrawler = new LinkCrawler(domain, newLink, verifiedLinks, site, siteRepository, pageRepository, lemmaRepository, indexRepository);
-                    linkCrawler.fork();
                 }
             }
         }
@@ -93,14 +95,14 @@ public class LinkCrawler extends RecursiveAction {
         List<String> allText = Arrays.stream(document.text().split(" ")).toList();
 
         for (String textWord : allText) {
-                try {
-                    Lemma lemma = createLemma(textWord);
-                    if (lemma != null) {
-                        list.add(lemma);
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
+            try {
+                Lemma lemma = createLemma(textWord);
+                if (lemma != null) {
+                    list.add(lemma);
                 }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
         return list;
     }
@@ -113,7 +115,7 @@ public class LinkCrawler extends RecursiveAction {
             Lemma lemma = new Lemma();
             lemma.setLemma(word);
             lemma.setSiteId(site);
-            if (!lemmaRepository.isExist(lemma.getLemma(), lemma.getSiteId().getId())) {
+            if (!lemmaRepository.existsByLemmaAndSiteId_Id(lemma.getLemma(), lemma.getSiteId().getId())) {
                 lemma.setFrequency(1);
                 lemmaRepository.save(lemma);
             } else {

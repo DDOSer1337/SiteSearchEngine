@@ -3,7 +3,7 @@ package searchengine.Busines.LinkHandling;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import searchengine.config.SitesList;
-import searchengine.dto.Result;
+import searchengine.dto.result.Result;
 import searchengine.model.Site;
 import searchengine.repositories.IndexRepository;
 import searchengine.repositories.LemmaRepository;
@@ -39,7 +39,7 @@ public class LinkParser {
                 atomicBoolean.getAndSet(true);
                 domain = url.split("/")[2];
                 Site site = new Site(url, domain);
-                if (siteRepository.isExist(site.getName())) {
+                if (siteRepository.existsByName(site.getName())) {
                     siteRepository.deleteByName(site.getName());
                     System.out.println("Удалено " + site.getName());
                 }
