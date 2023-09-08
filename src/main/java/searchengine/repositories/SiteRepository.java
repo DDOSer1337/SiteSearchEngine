@@ -8,16 +8,20 @@ import org.springframework.transaction.annotation.Transactional;
 import searchengine.model.Enum.SiteStatus;
 import searchengine.model.Site;
 
+import java.util.Optional;
+
 @Repository
 public interface SiteRepository extends CrudRepository<Site,Long> {
-    @Query(value ="Select * FROM skillbox.sites WHERE name like :name",nativeQuery = true)
-    Site getSiteByName(@Param("name")String name);
-    @Query(value ="SELECT CASE WHEN count(*) >0 THEN 'true' ELSE 'false' END as `boolean` FROM skillbox.sites where name = :name",nativeQuery = true)
-    boolean isExist(@Param("name") String name);
+
+    Site findByName(String name);
+    Site findByUrl(String url);
+
+    boolean existsByName(String name);
+
     @Transactional
     @Modifying
-    @Query(value ="DELETE FROM skillbox.sites WHERE name = ':name'",nativeQuery = true)
-    void deleteByName(@Param("name") String name);
+    void deleteByName(String name);
+
     @Transactional
     @Modifying
     @Query(value ="Update skillbox.sites Set site_status = :status WHERE name = :name",nativeQuery = true)

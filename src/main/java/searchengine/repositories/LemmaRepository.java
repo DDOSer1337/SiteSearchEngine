@@ -13,23 +13,21 @@ import java.util.Optional;
 @Repository
 public interface LemmaRepository extends CrudRepository<Lemma,Long> {
 
-    @Query(value ="Select * from skillbox.lemmas where WHERE lemma = :lemma and sites_id = :sitesID",nativeQuery = true)
-    Optional<Lemma> getByLemma(@Param("lemma") String lemma, @Param("sitesID") int sitesID);
+    Optional<Lemma> findByLemma(String lemma);
 
-    @Query(value ="SELECT CASE WHEN count(*) >0 THEN 'true' ELSE 'false' END as `boolean` FROM skillbox.lemmas WHERE lemma = :lemma and sites_id = :sitesID",nativeQuery = true)
-    boolean isExist(@Param("lemma") String lemma, @Param("sitesID") int sitesID);
+    long countBySiteId_Name(String name);
+
+    boolean existsByLemmaAndSiteId_Id(String lemma,int id);
 
     @Modifying
     @Transactional
     @Query(value ="UPDATE skillbox.lemmas SET `frequency` = `frequency` + 1 WHERE lemma = :lemma and sites_id = :sitesID",nativeQuery = true)
     void updateFrequency(@Param("lemma") String lemma, @Param("sitesID") int sitesID);
 
+
     @Query(value ="Select `frequency` from skillbox.lemmas WHERE lemma = :lemma and sites_id = :sitesID",nativeQuery = true)
     Integer getFrequency(@Param("lemma") String lemma, @Param("sitesID") int sitesID);
 
-    @Query(value ="Select Count(*) from skillbox.lemmas as l Join skillbox.sites as s on l.sites_id = s.id where s.name = :siteName",nativeQuery = true)
-    Integer getLemmaCount(@Param("siteName") String siteName);
-
     @Query(value ="SELECT sum(frequency) FROM skillbox.lemmas",nativeQuery = true)
-    Integer getAllLemmaCount ();
+    Integer getAllSumFrequency ();
 }
