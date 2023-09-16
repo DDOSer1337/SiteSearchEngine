@@ -8,6 +8,8 @@ import org.jsoup.nodes.Document;
 import javax.persistence.*;
 import javax.persistence.Index;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
@@ -18,7 +20,7 @@ public class Page implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = CascadeType.REMOVE)
     @JoinColumn(name = "sites_id")
     private Site siteId;
 
@@ -32,11 +34,16 @@ public class Page implements Serializable {
     @Type(type = "org.hibernate.type.TextType")
     private String content;
 
+    @OneToMany(mappedBy = "pageId",cascade = CascadeType.REMOVE,orphanRemoval = true)
+    private List<searchengine.model.Index> indices = new ArrayList<>();
+
     public Page() {
     }
 
-    public Page(String newLink, Document document,String domain,Site siteId, Integer code) {
-        this.path = newLink;
+    public Page(String newLink, Document document, String domain, Site siteId, Integer code) {
+        int start = newLink.indexOf(domain) + domain.length();
+        int end = newLink.length();
+        this.path = newLink.substring(start, end);
         this.content = document.toString();
         this.siteId = siteId;
         this.code = code;

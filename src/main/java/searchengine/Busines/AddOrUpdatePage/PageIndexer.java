@@ -20,7 +20,7 @@ import java.util.List;
 import static searchengine.services.IndexingImpl.atomicBoolean;
 
 @RequiredArgsConstructor
-public class PageIndexing {
+public class PageIndexer {
     @Autowired
     private final IndexRepository indexRepository;
     @Autowired

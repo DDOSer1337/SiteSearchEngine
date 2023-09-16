@@ -7,6 +7,8 @@ import searchengine.model.Enum.SiteStatus;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 @Setter
@@ -34,6 +36,13 @@ public class Site implements Serializable {
 
     @Column(nullable = false, length = 255)
     private String name;
+
+    @OneToMany(mappedBy = "siteId",cascade = CascadeType.REMOVE,orphanRemoval = true)
+    private List<Page> pages = new ArrayList<>();
+
+    @OneToMany(mappedBy = "siteId",cascade = CascadeType.REMOVE,orphanRemoval = true)
+    private List<Lemma> lemmas = new ArrayList<>();
+
 
     public Site() {
     }

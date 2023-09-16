@@ -8,8 +8,6 @@ import org.springframework.transaction.annotation.Transactional;
 import searchengine.model.Enum.SiteStatus;
 import searchengine.model.Site;
 
-import java.util.Optional;
-
 @Repository
 public interface SiteRepository extends CrudRepository<Site,Long> {
 
@@ -24,6 +22,6 @@ public interface SiteRepository extends CrudRepository<Site,Long> {
 
     @Transactional
     @Modifying
-    @Query(value ="Update skillbox.sites Set site_status = :status WHERE name = :name",nativeQuery = true)
+    @Query(value ="Update sites Set site.status = :status WHERE name = :name",nativeQuery = true)
     void UpdateErrorByName(@Param("name") String name, @Param("status")SiteStatus siteStatus);
 }

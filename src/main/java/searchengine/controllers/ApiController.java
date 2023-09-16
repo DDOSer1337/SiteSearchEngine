@@ -20,12 +20,12 @@ public class ApiController {
         this.indexing = indexing;
         this.searchEngine = searchEngine;
     }
-    // Сделано
+    // Сделано полностью
     @GetMapping("/statistics")
     public ResponseEntity<StatisticsResponse> statistics() {
         return ResponseEntity.ok(statisticsService.getStatistics());
     }
-    // Сделано
+    // почти сделано, осталось только респонз получать до завершения
     @GetMapping("/startIndexing")
     public ResponseEntity<?> startIndexing(){
         return indexing.start();
@@ -35,7 +35,7 @@ public class ApiController {
     public ResponseEntity<?> stopIndexing(){
         return indexing.stop();
     }
-    // В процессе
+    // почти сделано, осталось только сниппет сделать
     @GetMapping("/search")
     public ResponseEntity<?> search(@RequestParam("query") String query,@RequestParam(value = "site", required = false) String site){
         return searchEngine.search(site,query.split(" "));

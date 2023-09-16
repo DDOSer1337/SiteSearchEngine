@@ -1,13 +1,15 @@
 package searchengine.Busines.LinkHandling;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.apache.lucene.morphology.LuceneMorphology;
+import lombok.Setter;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.springframework.beans.factory.annotation.Autowired;
-import searchengine.Busines.Lucene;
+import org.springframework.stereotype.Service;
+import searchengine.Busines.LemmaCreator;
+import searchengine.model.Enum.SiteStatus;
 import searchengine.model.Index;
 import searchengine.model.Lemma;
 import searchengine.model.Page;
@@ -24,10 +26,13 @@ import java.util.concurrent.RecursiveAction;
 import static searchengine.services.IndexingImpl.atomicBoolean;
 
 @RequiredArgsConstructor
+@Getter
+@Setter
+@Service
 public class LinkCrawler extends RecursiveAction {
-    private final String domain, currentLink;
-    private final Set<String> verifiedLinks;
-    private final Site site;
+    private String domain, currentLink;
+    private Set<String> verifiedLinks;
+    private Site site;
     @Autowired
     private final SiteRepository siteRepository;
     @Autowired
@@ -53,8 +58,10 @@ public class LinkCrawler extends RecursiveAction {
         try {
             List<Element> links = connection.get().select("a[href]");
             for (Element link : links) {
-                String newLink = link.attr("abs:href");
-                recursiveActionFork(newLink, connection);
+                if (!verifiedLinks.contains(link.baseUri())) {
+                    String newLink = link.attr("abs:href");
+                    recursiveActionFork(newLink, connection);
+                }
             }
             verifiedLinks.add(currentLink);
         } catch (IOException e) {
@@ -63,66 +70,53 @@ public class LinkCrawler extends RecursiveAction {
         }
     }
 
-    private void exceptionSite(Site site) {
-        //напишу код позже
-    }
-
     private void recursiveActionFork(String newLink, Connection connection) throws IOException {
         Optional<Site> site = Optional.ofNullable(siteRepository.findByName(domain.substring(4)));
         if (site.isPresent()) {
             Page page = new Page(newLink, connection.get(), domain, site.get(), connection.execute().statusCode());
-            if (!pageRepository.existsByPathAndSiteId_id(page.getPath(), site.get().getId())) {
+            if (!pageExist(page, site.get())) {
                 pageRepository.save(page);
-                List<Lemma> list = getLemmas(connection.get());
+                page = pageRepository.findByPath(page.getPath());
+                List<Lemma> list = getLemmas(connection, site.get());
                 for (Lemma lemma : list) {
-                    if (atomicBoolean.get()) {
-                        Index index = new Index();
-                        if (!indexRepository.existsByLemmaIdAndPageId(page.getId(), lemma.getId())) {
-                            indexRepository.upRank(page.getId(), lemma.getId());
-                        } else {
-                            indexRepository.save(index);
-                        }
-                        LinkCrawler linkCrawler = new LinkCrawler(domain, newLink, verifiedLinks, site.get(), siteRepository, pageRepository, lemmaRepository, indexRepository);
-                        linkCrawler.fork();
+                    if (atomicBoolean.get() && lemma != null) {
+                        indexCreator(newLink, site.get(), page, lemma);
                     }
                 }
             }
         }
     }
-
-    private List<Lemma> getLemmas(Document document) {
-        List<Lemma> list = new ArrayList<>();
-        List<String> allText = Arrays.stream(document.text().split(" ")).toList();
-
-        for (String textWord : allText) {
-            try {
-                Lemma lemma = createLemma(textWord);
-                if (lemma != null) {
-                    list.add(lemma);
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        return list;
+    private boolean pageExist(Page page, Site site) {
+        return pageRepository.existsByPathAndSiteId(page.getPath(), site) && page.getPath().startsWith("/");
     }
 
-    private Lemma createLemma(String textWord) throws IOException {
-        String word2lower = textWord.toLowerCase(Locale.ROOT).trim();
-        LuceneMorphology luceneMorphology = new Lucene(word2lower).getLuceneMorphology();
-        if (luceneMorphology != null && textWord.matches("^([a-zа-яё]+|\\d+)$")) {
-            String word = luceneMorphology.getNormalForms(word2lower).get(0);
-            Lemma lemma = new Lemma();
-            lemma.setLemma(word);
-            lemma.setSiteId(site);
-            if (!lemmaRepository.existsByLemmaAndSiteId_Id(lemma.getLemma(), lemma.getSiteId().getId())) {
-                lemma.setFrequency(1);
-                lemmaRepository.save(lemma);
-            } else {
-                lemmaRepository.updateFrequency(lemma.getLemma(), lemma.getSiteId().getId());
-            }
-            return lemma;
-        }
-        return null;
+    private List<Lemma> getLemmas(Connection connection, Site site) throws IOException {
+        LemmaCreator lemmaCreator = new LemmaCreator(lemmaRepository, connection.get(), site);
+        lemmaCreator.createLemmas();
+        return lemmaCreator.getListLemmas();
     }
+
+    private void indexCreator(String newLink, Site site, Page page, Lemma lemma) {
+        Index index = new Index(page, lemma);
+        if (!indexRepository.existsByLemmaIdAndPageId(lemma, page)) {
+            indexRepository.save(index);
+        } else {
+            indexRepository.upRank(page.getId(), lemma.getId());
+        }
+        forking(newLink, site);
+    }
+
+    private void forking(String newLink, Site site) {
+        LinkCrawler linkCrawler = new LinkCrawler(siteRepository, pageRepository, lemmaRepository, indexRepository);
+        linkCrawler.setDomain(domain);
+        linkCrawler.setCurrentLink(newLink);
+        linkCrawler.setSite(site);
+        linkCrawler.setVerifiedLinks(verifiedLinks);
+        linkCrawler.fork();
+    }
+
+    private void exceptionSite(Site site) {
+        siteRepository.UpdateErrorByName(site.getName(), SiteStatus.FAILED);
+    }
+
 }

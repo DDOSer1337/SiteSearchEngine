@@ -1,6 +1,9 @@
 package searchengine.Busines.LinkHandling;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import searchengine.config.SitesList;
 import searchengine.dto.result.Result;
@@ -17,16 +20,21 @@ import java.util.Set;
 
 import static searchengine.services.IndexingImpl.atomicBoolean;
 
-@Service
+@Service @Getter @Setter
 @RequiredArgsConstructor
 public class LinkParser {
     private String domain;
     private Set<String> verifiedLinks = Collections.synchronizedSet(new HashSet<>());
     private final SitesList sitesList;
+    @Autowired
     private final SiteRepository siteRepository;
+    @Autowired
     private final PageRepository pageRepository;
+    @Autowired
     private final LemmaRepository lemmaRepository;
+    @Autowired
     private final IndexRepository indexRepository;
+    private final LinkCrawler linkCrawler;
 
 
     public void startParse() {
@@ -44,7 +52,10 @@ public class LinkParser {
                     System.out.println("Удалено " + site.getName());
                 }
                 siteRepository.save(site);
-                LinkCrawler linkCrawler = new LinkCrawler(domain, url, verifiedLinks, site,siteRepository,pageRepository,lemmaRepository,indexRepository);
+                linkCrawler.setDomain(domain);
+                linkCrawler.setCurrentLink(siteFromList.getUrl());
+                linkCrawler.setSite(site);
+                linkCrawler.setVerifiedLinks(verifiedLinks);
                 linkCrawler.compute();
             }
         }

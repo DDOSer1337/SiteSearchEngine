@@ -5,7 +5,8 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.util.Objects;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
@@ -16,7 +17,7 @@ public class Lemma implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = CascadeType.REMOVE)
     @JoinColumn(name = "sites_id")
     private Site siteId;
 
@@ -26,16 +27,8 @@ public class Lemma implements Serializable {
     @Column(name = "frequency",nullable = false)
     private int frequency;
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Lemma lemma1 = (Lemma) o;
-        return Objects.equals(siteId, lemma1.siteId) && Objects.equals(lemma, lemma1.lemma);
-    }
+    @OneToMany(mappedBy = "lemmaId",cascade = CascadeType.REMOVE,orphanRemoval = true)
+    private List<Index> indices = new ArrayList<>();
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(siteId, lemma);
-    }
+
 }

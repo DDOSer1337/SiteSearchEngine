@@ -3,7 +3,7 @@ package searchengine.services;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import searchengine.Busines.AddOrUpdatePage.PageIndexing;
+import searchengine.Busines.AddOrUpdatePage.PageIndexer;
 import searchengine.services.Interface.IndexPage;
 
 @Service
@@ -13,7 +13,7 @@ public class IndexPageImpl implements IndexPage {
 
     public ResponseEntity<?> indexPage() {
         if (!isIndexing) {
-            PageIndexing addOrUpdatePage;
+            PageIndexer addOrUpdatePage;
         }
         return null;
     }

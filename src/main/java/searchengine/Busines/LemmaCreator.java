@@ -10,10 +10,7 @@ import searchengine.model.Site;
 import searchengine.repositories.LemmaRepository;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 @RequiredArgsConstructor
 public class LemmaCreator {
@@ -27,15 +24,18 @@ public class LemmaCreator {
         return list;
     }
 
-    public void createLemmas(){
+    public void createLemmas() {
         list = new ArrayList<>();
         List<String> allText = Arrays.stream(document.text().split(" ")).toList();
         for (String textWord : allText) {
             try {
                 Lemma lemma = createLemma(textWord);
                 if (lemma != null) {
-                    lemma = lemmaRepository.findByLemma(lemma.getLemma());
-                    list.add(lemma);
+                    Optional<Lemma> optionalLemma = lemmaRepository.findByLemma(lemma.getLemma());
+                    if (optionalLemma.isPresent()) {
+                        lemma = optionalLemma.get();
+                        list.add(lemma);
+                    }
                 }
             } catch (IOException e) {
                 e.printStackTrace();
