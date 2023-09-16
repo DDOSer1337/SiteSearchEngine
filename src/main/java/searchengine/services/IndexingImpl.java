@@ -23,6 +23,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class IndexingImpl implements Indexing {
     private final SitesList sitesList;
     public static AtomicBoolean atomicBoolean = new AtomicBoolean(false);
+    private final LinkParser linkParser;
     @Autowired
     private final SiteRepository siteRepository;
     @Autowired
@@ -55,7 +56,6 @@ public class IndexingImpl implements Indexing {
         Result result = new Result();
         if (!atomicBoolean.get()){
             result.setResult(true);
-            LinkParser linkParser = new LinkParser(sitesList,siteRepository,pageRepository,lemmaRepository,indexRepository);
             linkParser.startParse();
             SuccessResult successResult = new SuccessResult();
             successResult.setResult(result);

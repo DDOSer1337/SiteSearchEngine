@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import searchengine.Busines.Search.Search;
+import searchengine.Busines.Search.SearchByWord;
 import searchengine.config.SitesList;
 import searchengine.dto.result.FailedResult;
 import searchengine.dto.result.Result;
@@ -15,6 +15,7 @@ import searchengine.services.Interface.SearchEngine;
 @RequiredArgsConstructor
 public class SearchEngineImpl implements SearchEngine {
     private final SitesList sitesList;
+    private final SearchByWord searchByWord;
     @Override
     public ResponseEntity<?> search(String siteName, String[] word) {
         Result result = new Result();
@@ -22,10 +23,11 @@ public class SearchEngineImpl implements SearchEngine {
             result.setResult(true);
             SuccessSearchResult successResult = new SuccessSearchResult();
             successResult.setResult(result.isResult());
-            Search search = new Search(word,siteName,sitesList);
-            search.startSearch();
-            successResult.setCount(search.getCount());
-            successResult.setData(search.getFoundedData());
+            searchByWord.setWord(word);
+            searchByWord.setUrl(siteName);
+            searchByWord.startSearch();
+            successResult.setCount(searchByWord.getCount());
+            successResult.setData(searchByWord.getFoundedData());
             return ResponseEntity.status(HttpStatus.OK).body(successResult);
         }
         else {
