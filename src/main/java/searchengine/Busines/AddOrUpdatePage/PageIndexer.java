@@ -17,8 +17,6 @@ import searchengine.repositories.SiteRepository;
 import java.io.IOException;
 import java.util.List;
 
-import static searchengine.services.IndexingImpl.atomicBoolean;
-
 @RequiredArgsConstructor
 public class PageIndexer {
     @Autowired
@@ -44,9 +42,7 @@ public class PageIndexer {
                 page = pageRepository.findByPath(page.getPath());
                 List<Lemma> list = getLemmas(connection, page.getSiteId());
                 for (Lemma lemma : list) {
-                    if (atomicBoolean.get() && lemma != null) {
                         indexCreator(page, lemma);
-                    }
                 }
             }
             else {

@@ -22,8 +22,7 @@ import searchengine.repositories.SiteRepository;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.RecursiveAction;
-
-import static searchengine.services.IndexingImpl.atomicBoolean;
+import static searchengine.services.Interface.Indexing.isIndexing;
 
 @RequiredArgsConstructor
 @Getter
@@ -45,7 +44,7 @@ public class LinkCrawler extends RecursiveAction {
 
     @Override
     protected void compute() {
-        if (atomicBoolean.get() && !verifiedLinks.contains(currentLink)) {
+        if (isIndexing.get() && !verifiedLinks.contains(currentLink)) {
             linkChecking();
         }
     }
@@ -79,7 +78,7 @@ public class LinkCrawler extends RecursiveAction {
                 page = pageRepository.findByPath(page.getPath());
                 List<Lemma> list = getLemmas(connection, site.get());
                 for (Lemma lemma : list) {
-                    if (atomicBoolean.get() && lemma != null) {
+                    if (isIndexing.get() && lemma != null) {
                         indexCreator(newLink, site.get(), page, lemma);
                     }
                 }

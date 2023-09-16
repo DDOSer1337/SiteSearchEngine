@@ -18,7 +18,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static searchengine.services.IndexingImpl.atomicBoolean;
+import static searchengine.services.Interface.Indexing.isIndexing;
 
 @Service @Getter @Setter
 @RequiredArgsConstructor
@@ -40,11 +40,11 @@ public class LinkParser {
     public void startParse() {
         List<searchengine.config.Site> listSites = sitesList.getSites();
         Result result = new Result();
-        result.setResult(atomicBoolean.get());
+        result.setResult(isIndexing.get());
         for (searchengine.config.Site siteFromList : listSites) {
             String url = siteFromList.getUrl();
             if (!result.isResult() && isURL(url)) {
-                atomicBoolean.getAndSet(true);
+                isIndexing.getAndSet(true);
                 domain = url.split("/")[2];
                 Site site = new Site(url, domain);
                 if (siteRepository.existsByName(site.getName())) {

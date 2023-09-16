@@ -16,13 +16,9 @@ import searchengine.repositories.PageRepository;
 import searchengine.repositories.SiteRepository;
 import searchengine.services.Interface.Indexing;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-
 @Service
 @RequiredArgsConstructor
 public class IndexingImpl implements Indexing {
-    private final SitesList sitesList;
-    public static AtomicBoolean atomicBoolean = new AtomicBoolean(false);
     private final LinkParser linkParser;
     @Autowired
     private final SiteRepository siteRepository;
@@ -36,9 +32,9 @@ public class IndexingImpl implements Indexing {
     @Override
     public ResponseEntity<?> stop() {
         Result result = new Result();
-        result.setResult(atomicBoolean.get());
+        result.setResult(isIndexing.get());
         if (result.isResult()){
-            atomicBoolean.getAndSet(false);
+            isIndexing.getAndSet(false);
             SuccessResult successResult = new SuccessResult();
             successResult.setResult(result);
             return ResponseEntity.status(HttpStatus.OK).body(successResult);
@@ -54,9 +50,9 @@ public class IndexingImpl implements Indexing {
     @Override
     public ResponseEntity<?> start() {
         Result result = new Result();
-        if (!atomicBoolean.get()){
+        if (!isIndexing.get()){
             result.setResult(true);
-            linkParser.startParse();
+            new Thread(linkParser::startParse).start();
             SuccessResult successResult = new SuccessResult();
             successResult.setResult(result);
             return ResponseEntity.status(HttpStatus.OK).body(successResult);
