@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 import searchengine.Busines.Lucene;
 import searchengine.config.Site;
 import searchengine.config.SitesList;
-import searchengine.dto.search.Data;
+import searchengine.dto.searchByWord.Data;
 import searchengine.model.Index;
 import searchengine.model.Page;
 import searchengine.repositories.IndexRepository;
@@ -28,8 +28,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
@@ -60,11 +58,11 @@ public class SearchByWord {
                     String correctWord = luceneMorphology.getNormalForms(w.toLowerCase(Locale.ROOT)).get(0);
                     if (url != null) {
                         indexRepository.findFirst10ByLemmaId_Lemma(w.toLowerCase(Locale.ROOT));
-                        dataList.addAll(getData(correctWord, url));
+                        dataList.addAll(getListData(correctWord, url));
                     } else {
                         for (Site site : sitesList.getSites()) {
                             //Optional<Index> indices = indexRepository.findFirst10ByLemmaId_LemmaAndLemmaId_SiteId_Url(correctWord, site.getUrl());
-                            dataList.addAll(getData(correctWord, site.getUrl()));
+                            dataList.addAll(getListData(correctWord, site.getUrl()));
                         }
                     }
                 } catch (IOException e) {
@@ -74,7 +72,7 @@ public class SearchByWord {
         }
     }
 
-    private List<Data> getData(String correctWord, String url) {
+    private List<Data> getListData(String correctWord, String url) {
         System.out.println("getData");
         List<Data> list = new ArrayList<>();
         Optional<Integer> count = Optional.ofNullable(indexRepository.getRank(url, correctWord));
@@ -83,15 +81,10 @@ public class SearchByWord {
         AtomicReference<Float> allReliance = new AtomicReference<>(0f);
         if (site.isPresent()) {
             System.out.println("\n i " + i.toString() + "\n");
-            i.forEach(index -> {Data data = new Data() ;
-                Page page = index.getPageId();
-                data.setSite(site.get().getUrl() + "/");
-                data.setSiteName(site.get().getName());
-                data.setUrl(page.getPath());
-                data.setSnippet("<b>" + setSnippet(page.getContent(), correctWord) + "</b>");
-                data.setTitle(setTitle(page.getContent()));
+            i.forEach(index -> {
                 float reliance = index.getRank();
-                data.setRelevance(reliance);
+                Page page = index.getPageId();
+                Data data = getData(correctWord, site.get(), reliance, page);
                 allReliance.set(allReliance.get() + reliance);
                 list.add(data);
             });
@@ -102,6 +95,17 @@ public class SearchByWord {
             data.setRelevance(data.getRelevance() / allReliance.get());
         }
         return list;
+    }
+
+    private Data getData(String correctWord, searchengine.model.Site site, float reliance, Page page) {
+        Data data = new Data() ;
+        data.setSite(site.getUrl() + "/");
+        data.setSiteName(site.getName());
+        data.setUrl(page.getPath());
+        data.setSnippet("<b>" + setSnippet(page.getContent(), correctWord) + "</b>");
+        data.setTitle(setTitle(page.getContent()));
+        data.setRelevance(reliance);
+        return data;
     }
 
     public List<Data> getFoundedData() {
@@ -128,8 +132,7 @@ public class SearchByWord {
     private String setTitle(String content) {
         int start = content.indexOf("<title>");
         int end = content.indexOf("</title>");
-        String result = content.substring(start, end + 8);
-        return result;
+        return content.substring(start, end + 8);
     }
 
     private float setRelevance() {
