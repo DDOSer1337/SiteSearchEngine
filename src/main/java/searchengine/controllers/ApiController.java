@@ -3,6 +3,7 @@ package searchengine.controllers;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import searchengine.dto.statistics.StatisticsResponse;
+import searchengine.services.Interface.IndexPage;
 import searchengine.services.Interface.Indexing;
 import searchengine.services.Interface.SearchEngine;
 import searchengine.services.Interface.StatisticsService;
@@ -14,18 +15,20 @@ public class ApiController {
     private final StatisticsService statisticsService;
     private final Indexing indexing;
     private final SearchEngine searchEngine;
+    private final IndexPage indexPage;
 
-    public ApiController(StatisticsService statisticsService, Indexing indexing, SearchEngine searchEngine) {
+    public ApiController(StatisticsService statisticsService, Indexing indexing, SearchEngine searchEngine, IndexPage indexPage) {
         this.statisticsService = statisticsService;
         this.indexing = indexing;
         this.searchEngine = searchEngine;
+        this.indexPage = indexPage;
     }
-    // Сделано полностью
+    // Сделано
     @GetMapping("/statistics")
     public ResponseEntity<StatisticsResponse> statistics() {
         return ResponseEntity.ok(statisticsService.getStatistics());
     }
-    // почти сделано, осталось только респонз получать до завершения
+    // почти сделано, осталось сделать только нормальную индексацию
     @GetMapping("/startIndexing")
     public ResponseEntity<?> startIndexing(){
         return indexing.start();
@@ -35,7 +38,7 @@ public class ApiController {
     public ResponseEntity<?> stopIndexing(){
         return indexing.stop();
     }
-    // почти сделано, осталось только сниппет сделать
+    // сделано
     @GetMapping("/search")
     public ResponseEntity<?> search(@RequestParam("query") String query,@RequestParam(value = "site", required = false) String site){
         return searchEngine.search(site,query.split(" "));
@@ -43,6 +46,6 @@ public class ApiController {
     //В процессе
     @PostMapping("/indexPage")
     public ResponseEntity<?> indexPage(@RequestParam("url") String url){
-        return null;
+        return indexPage.AddOrUpdatePage(url);
     }
 }
