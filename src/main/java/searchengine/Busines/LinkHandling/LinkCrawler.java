@@ -18,14 +18,13 @@ import searchengine.repositories.IndexRepository;
 import searchengine.repositories.LemmaRepository;
 import searchengine.repositories.PageRepository;
 import searchengine.repositories.SiteRepository;
+import searchengine.services.IndexingImpl;
 
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.RecursiveAction;
-import static searchengine.services.Interface.Indexing.isIndexing;
 
 @RequiredArgsConstructor
-@Getter
 @Setter
 @Service
 public class LinkCrawler extends RecursiveAction {
@@ -44,7 +43,7 @@ public class LinkCrawler extends RecursiveAction {
 
     @Override
     protected void compute() {
-        if (isIndexing.get() && !verifiedLinks.contains(currentLink)) {
+        if (IndexingImpl.isIndexing.get() && !verifiedLinks.contains(currentLink)) {
             linkChecking();
         }
     }
@@ -78,8 +77,9 @@ public class LinkCrawler extends RecursiveAction {
                 page = pageRepository.findByPath(page.getPath());
                 List<Lemma> list = getLemmas(connection, site.get());
                 for (Lemma lemma : list) {
-                    if (isIndexing.get() && lemma != null) {
-                        indexCreator(newLink, site.get(), page, lemma);
+                    if (IndexingImpl.isIndexing.get() && lemma != null) {
+                        indexCreator(page, lemma);
+                        forking(newLink);
                     }
                 }
             }
@@ -95,18 +95,18 @@ public class LinkCrawler extends RecursiveAction {
         return lemmaCreator.getListLemmas();
     }
 
-    private void indexCreator(String newLink, Site site, Page page, Lemma lemma) {
+    private void indexCreator(Page page, Lemma lemma) {
         Index index = new Index(page, lemma);
         if (!indexRepository.existsByLemmaIdAndPageId(lemma, page)) {
             indexRepository.save(index);
         } else {
             indexRepository.upRank(page.getId(), lemma.getId());
         }
-        forking(newLink, site);
     }
 
-    private void forking(String newLink, Site site) {
+    private void forking(String newLink) {
         LinkCrawler linkCrawler = new LinkCrawler(siteRepository, pageRepository, lemmaRepository, indexRepository);
+        linkCrawler.setCurrentLink(newLink);
         linkCrawler.setDomain(domain);
         linkCrawler.setCurrentLink(newLink);
         linkCrawler.setSite(site);
