@@ -12,13 +12,12 @@ import searchengine.repositories.IndexRepository;
 import searchengine.repositories.LemmaRepository;
 import searchengine.repositories.PageRepository;
 import searchengine.repositories.SiteRepository;
+import searchengine.services.IndexingImpl;
 
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import static searchengine.services.Interface.Indexing.isIndexing;
 
 @Service @Getter @Setter
 @RequiredArgsConstructor
@@ -39,17 +38,14 @@ public class LinkParser {
 
     public void startParse() {
         List<searchengine.config.Site> listSites = sitesList.getSites();
-        Result result = new Result();
-        result.setResult(isIndexing.get());
         for (searchengine.config.Site siteFromList : listSites) {
             String url = siteFromList.getUrl();
-            if (!result.isResult() && isURL(url)) {
-                isIndexing.getAndSet(true);
+            if (!IndexingImpl.isIndexing.get() && isURL(url)) {
+                IndexingImpl.isIndexing.getAndSet(true);
                 domain = url.split("/")[2];
                 Site site = new Site(url, domain);
                 if (siteRepository.existsByName(site.getName())) {
                     siteRepository.deleteByName(site.getName());
-                    System.out.println("Удалено " + site.getName());
                 }
                 siteRepository.save(site);
                 linkCrawler.setDomain(domain);
