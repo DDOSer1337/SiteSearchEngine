@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.apache.lucene.morphology.LuceneMorphology;
 import org.jsoup.nodes.Document;
 import org.springframework.beans.factory.annotation.Autowired;
-import searchengine.Busines.Lucene;
 import searchengine.model.Lemma;
 import searchengine.model.Site;
 import searchengine.repositories.LemmaRepository;
@@ -27,9 +26,9 @@ public class LemmaCreator {
     public void createLemmas() {
         list = new ArrayList<>();
         List<String> allText = Arrays.stream(document.text().split(" ")).toList();
-        for (String textWord : allText) {
+        allText.forEach(word -> {
             try {
-                Lemma lemma = createLemma(textWord);
+                Lemma lemma = createLemma(word);
                 if (lemma != null) {
                     Optional<Lemma> optionalLemma = lemmaRepository.findByLemma(lemma.getLemma());
                     if (optionalLemma.isPresent()) {
@@ -40,7 +39,7 @@ public class LemmaCreator {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        }
+        });
     }
 
     private Lemma createLemma(String textWord) throws IOException {
