@@ -1,33 +1,22 @@
 package searchengine.services;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import searchengine.Busines.LinkHandling.LinkParser;
-import searchengine.config.SitesList;
 import searchengine.dto.result.FailedResult;
 import searchengine.dto.result.Result;
 import searchengine.dto.result.SuccessResult;
-import searchengine.repositories.IndexRepository;
-import searchengine.repositories.LemmaRepository;
-import searchengine.repositories.PageRepository;
-import searchengine.repositories.SiteRepository;
 import searchengine.services.Interface.Indexing;
+
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Service
 @RequiredArgsConstructor
 public class IndexingImpl implements Indexing {
+    public static AtomicBoolean isIndexing = new AtomicBoolean(false);
     private final LinkParser linkParser;
-    @Autowired
-    private final SiteRepository siteRepository;
-    @Autowired
-    private final PageRepository pageRepository;
-    @Autowired
-    private final LemmaRepository lemmaRepository;
-    @Autowired
-    private final IndexRepository indexRepository;
 
     @Override
     public ResponseEntity<?> stop() {

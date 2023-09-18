@@ -1,4 +1,4 @@
-package searchengine.dto.search;
+package searchengine.dto.searchByWord;
 
 @lombok.Data
 public class Data {

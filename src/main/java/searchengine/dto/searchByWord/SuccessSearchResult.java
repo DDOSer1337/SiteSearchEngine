@@ -1,6 +1,4 @@
-package searchengine.dto.search;
-
-import searchengine.dto.result.Result;
+package searchengine.dto.searchByWord;
 
 import java.util.List;
 

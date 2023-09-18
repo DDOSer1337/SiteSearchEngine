@@ -5,17 +5,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import searchengine.Busines.Search.SearchByWord;
-import searchengine.config.SitesList;
 import searchengine.dto.result.FailedResult;
 import searchengine.dto.result.Result;
-import searchengine.dto.search.SuccessSearchResult;
+import searchengine.dto.searchByWord.SuccessSearchResult;
 import searchengine.services.Interface.SearchEngine;
 
 @Service
 @RequiredArgsConstructor
 public class SearchEngineImpl implements SearchEngine {
-    private final SitesList sitesList;
     private final SearchByWord searchByWord;
+
     @Override
     public ResponseEntity<?> search(String siteName, String[] word) {
         Result result = new Result();

@@ -9,12 +9,10 @@ import searchengine.services.Interface.IndexPage;
 @Service
 @RequiredArgsConstructor
 public class IndexPageImpl implements IndexPage {
-    private boolean isIndexing = false;
+    private final PageIndexer pageIndexer;
 
-    public ResponseEntity<?> indexPage() {
-        if (!isIndexing) {
-            PageIndexer addOrUpdatePage;
-        }
-        return null;
+    @Override
+    public ResponseEntity<?> AddOrUpdatePage(String url) {
+        return pageIndexer.AddOrUpdatePage(url);
     }
 }
