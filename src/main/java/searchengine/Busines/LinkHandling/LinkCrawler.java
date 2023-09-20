@@ -72,7 +72,7 @@ public class LinkCrawler extends RecursiveAction {
         Optional<Site> site = Optional.ofNullable(siteRepository.findByName(domain.substring(4)));
         if (site.isPresent()) {
             Page page = new Page(newLink, connection.get(), domain, site.get(), connection.execute().statusCode());
-            if (!pageExist(page, site.get())) {
+            if (!pageExist(page)) {
                 pageRepository.save(page);
                 page = pageRepository.findByPath(page.getPath());
                 List<Lemma> list = getLemmas(connection, site.get());
@@ -85,8 +85,9 @@ public class LinkCrawler extends RecursiveAction {
             }
         }
     }
-    private boolean pageExist(Page page, Site site) {
-        return pageRepository.existsByPathAndSiteId(page.getPath(), site) && page.getPath().startsWith("/");
+    private boolean pageExist(Page page) {
+        System.out.println("\n\n\n\n\n\n"+page.getPath()+"\n"+page.getSiteId().getId()+"\n\n\n\n\n\n");
+        return pageRepository.existsByPathAndSiteId_name(page.getPath(), domain.substring(4));
     }
 
     private List<Lemma> getLemmas(Connection connection, Site site) throws IOException {

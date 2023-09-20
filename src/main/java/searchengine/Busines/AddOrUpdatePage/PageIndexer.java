@@ -90,7 +90,7 @@ public class PageIndexer{
     }
 
     private void saveOrDeletePage(Page page) {
-        if (!pageExist(page, page.getSiteId())) {
+        if (!pageExist(page)) {
             pageRepository.save(page);
         } else {
             pageRepository.deleteByPath(page.getPath());
@@ -98,8 +98,8 @@ public class PageIndexer{
         }
     }
 
-    private boolean pageExist(Page page, Site site) {
-        return pageRepository.existsByPathAndSiteId(page.getPath(), site) && page.getPath().startsWith("/");
+    private boolean pageExist(Page page) {
+        return pageRepository.existsByPathAndSiteId_name(page.getPath(), domain.substring(4)) && page.getPath().startsWith("/");
     }
 
     private void indexing(Connection connection, Page page) throws IOException {
