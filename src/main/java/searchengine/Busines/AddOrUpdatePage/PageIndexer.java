@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 import searchengine.Busines.LemmaCreator;
 import searchengine.dto.result.FailedResult;
 import searchengine.dto.result.Result;
-import searchengine.dto.result.SuccessResult;
 import searchengine.model.Index;
 import searchengine.model.Lemma;
 import searchengine.model.Page;
@@ -25,9 +24,11 @@ import searchengine.repositories.SiteRepository;
 import java.io.IOException;
 import java.util.List;
 
-@Service @Setter @Getter
+@Service
+@Setter
+@Getter
 @RequiredArgsConstructor
-public class PageIndexer{
+public class PageIndexer {
     private int count = 0;
     @Autowired
     private final IndexRepository indexRepository;
@@ -46,18 +47,18 @@ public class PageIndexer{
         this.url = url;
         domain = url.split("/")[2];
         String siteName = getSiteName(domain);
-        if (siteRepository.existsByName(siteName)){
+        if (siteRepository.existsByName(siteName)) {
             site = siteRepository.findByName(siteName);
             new Thread(this::pageIndexing).start();
             Result result = new Result();
+            result.setResult(true);
             return ResponseEntity.status(HttpStatus.OK).body(result);
-        }
-        else {
+        } else {
             Result result = new Result();
             result.setResult(false);
             FailedResult failedResult = new FailedResult();
             failedResult.setResult(result);
-            failedResult.setError("Данная страница находится за пределами сайтов, указанных в конфигурационном файле");
+            failedResult.setError("Данная страница находится за пределами сайтов, указанных в базе данных");
             return ResponseEntity.status(HttpStatus.OK).body(failedResult);
         }
     }
@@ -71,7 +72,7 @@ public class PageIndexer{
             try {
                 Page page = new Page(url, connection.get(), domain, site, connection.execute().statusCode());
                 saveOrDeletePage(page);
-                page = pageRepository.findByPath(page.getPath());
+                page = pageRepository.findByPathAndSiteId_Name(page.getPath(),site.getName());
                 indexing(connection, page);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -90,16 +91,14 @@ public class PageIndexer{
     }
 
     private void saveOrDeletePage(Page page) {
-        if (!pageExist(page)) {
-            pageRepository.save(page);
-        } else {
+        if (pageExist(page)) {
             pageRepository.deleteByPath(page.getPath());
-            pageRepository.save(page);
         }
+        pageRepository.save(page);
     }
 
     private boolean pageExist(Page page) {
-        return pageRepository.existsByPathAndSiteId_name(page.getPath(), domain.substring(4)) && page.getPath().startsWith("/");
+        return pageRepository.existsByPathAndSiteId_name(page.getPath(), domain.substring(4));
     }
 
     private void indexing(Connection connection, Page page) throws IOException {
@@ -113,7 +112,7 @@ public class PageIndexer{
     }
 
     private List<Lemma> getLemmas(Connection connection, Site site) throws IOException {
-        LemmaCreator lemmaCreator = new LemmaCreator(lemmaRepository, connection.get(), site);
+        LemmaCreator lemmaCreator = new LemmaCreator(lemmaRepository, connection.get(), site,false);
         lemmaCreator.createLemmas();
         return lemmaCreator.getListLemmas();
     }
