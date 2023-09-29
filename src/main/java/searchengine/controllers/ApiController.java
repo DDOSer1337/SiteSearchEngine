@@ -23,29 +23,29 @@ public class ApiController {
         this.searchEngine = searchEngine;
         this.indexPage = indexPage;
     }
-    // Сделано
+
     @GetMapping("/statistics")
     public ResponseEntity<StatisticsResponse> statistics() {
         return ResponseEntity.ok(statisticsService.getStatistics());
     }
-    // почти сделано, осталось сделать только нормальную индексацию
+
     @GetMapping("/startIndexing")
-    public ResponseEntity<?> startIndexing(){
+    public ResponseEntity<?> startIndexing() {
         return indexing.start();
     }
-    // Сделано
+
     @GetMapping("/stopIndexing")
-    public ResponseEntity<?> stopIndexing(){
+    public ResponseEntity<?> stopIndexing() {
         return indexing.stop();
     }
-    // сделано
+
     @GetMapping("/search")
-    public ResponseEntity<?> search(@RequestParam("query") String query,@RequestParam(value = "site", required = false) String site){
-        return searchEngine.search(site,query.split(" "));
+    public ResponseEntity<?> search(@RequestParam("query") String query,@RequestParam("offset") int offset, @RequestParam(value = "site", required = false) String site) {
+        return searchEngine.search(site,query.split(" "),offset);
     }
-    //В процессе
+
     @PostMapping("/indexPage")
-    public ResponseEntity<?> indexPage(@RequestParam("url") String url){
+    public ResponseEntity<?> indexPage(@RequestParam("url") String url) {
         return indexPage.AddOrUpdatePage(url);
     }
 }
