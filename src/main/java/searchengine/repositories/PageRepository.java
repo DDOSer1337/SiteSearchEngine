@@ -10,8 +10,7 @@ public interface PageRepository extends CrudRepository<Page,Long> {
 
     boolean existsByPathAndSiteId_name(String path, String siteName);
 
-    Page findByPath(String path);
-    Page findBySiteId_url(String url);
+    Page findByPathAndSiteId_Name(String path, String name);
 
     @Transactional
     long deleteByPath(String path);
