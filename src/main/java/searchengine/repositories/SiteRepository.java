@@ -5,7 +5,6 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
-import searchengine.model.Enum.SiteStatus;
 import searchengine.model.Site;
 
 @Repository
@@ -22,6 +21,6 @@ public interface SiteRepository extends CrudRepository<Site,Long> {
 
     @Transactional
     @Modifying
-    @Query(value ="Update sites Set site.status = :status WHERE name = :name",nativeQuery = true)
-    void UpdateErrorByName(@Param("name") String name, @Param("status")SiteStatus siteStatus);
+    @Query(value ="Update sites Set site_status = :status WHERE name = :name",nativeQuery = true)
+    void UpdateErrorByName(@Param("name") String name, @Param("status")String siteStatus);
 }
