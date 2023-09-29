@@ -10,20 +10,28 @@ import searchengine.model.Index;
 import searchengine.model.Lemma;
 import searchengine.model.Page;
 
+import java.util.List;
+import java.util.Optional;
+
 @Repository
 public interface IndexRepository extends CrudRepository<Index,Long> {
 
     boolean existsByLemmaIdAndPageId(Lemma lemma, Page page);
 
-    Index findFirst10ByLemmaId_Lemma(String lemma);
+    List<Index> findAllByLemmaId_LemmaOrderByLemmaId_frequency(String lemma);
 
-    Iterable<Index> findTop10ByLemmaId_lemmaAndPageId_SiteId_urlOrderByLemmaId_frequencyDesc(String lemma, String url);
+    List<Index> findAllByLemmaId_lemmaAndPageId_SiteId_urlOrderByLemmaId_frequency(String lemma, String url);
 
-    @Query(value ="Select sum(`rank`) from skillbox.indices as i \n" +
+    @Query(value ="Select Count(`rank`) from skillbox.indices as i \n" +
             "join skillbox.lemmas as l on i.lemmas_id =  l.id \n" +
             "join skillbox.sites as s on l.sites_id = s.id \n" +
             "where s.url = :siteURL and lemma = :lemma",nativeQuery = true)
-    Integer getRank(@Param("siteURL") String siteURL, @Param("lemma") String lemmas);
+    Optional<Integer> getRankOnOneSite(@Param("siteURL") String siteURL, @Param("lemma") String lemmas);
+
+    @Query(value ="Select Count(`rank`) from skillbox.indices as i \n" +
+            "join skillbox.lemmas as l on i.lemmas_id =  l.id \n" +
+            "where lemma = :lemma",nativeQuery = true)
+    Optional<Integer> getRankOnAllSites(@Param("lemma") String lemmas);
 
     @Modifying
     @Transactional
