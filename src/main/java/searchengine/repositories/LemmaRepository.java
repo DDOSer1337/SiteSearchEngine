@@ -7,18 +7,17 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import searchengine.model.Lemma;
-import searchengine.model.Site;
 
 import java.util.Optional;
 
 @Repository
 public interface LemmaRepository extends CrudRepository<Lemma,Long> {
 
-    Optional<Lemma> findByLemma(String lemma);
+    Optional<Lemma> findByLemmaAndSiteId_name(String lemma, String name);
 
     long countBySiteId_Name(String name);
 
-    boolean existsByLemmaAndSiteId(String lemma, Site site);
+    boolean existsByLemmaAndSiteId_name(String lemma, String site);
 
     @Modifying
     @Transactional
