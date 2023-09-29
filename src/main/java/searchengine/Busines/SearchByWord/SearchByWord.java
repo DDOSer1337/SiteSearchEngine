@@ -1,4 +1,4 @@
-package searchengine.Busines.Search;
+package searchengine.Busines.SearchByWord;
 
 
 import lombok.Getter;
@@ -12,7 +12,6 @@ import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import searchengine.Busines.Lucene;
-import searchengine.config.Site;
 import searchengine.config.SitesList;
 import searchengine.dto.searchByWord.Data;
 import searchengine.model.Index;
@@ -27,7 +26,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
 
 @Service
 @RequiredArgsConstructor
@@ -47,24 +45,19 @@ public class SearchByWord {
     private String[] word;
     private String url;
     private List<Data> dataList;
-    private int count;
+    private int count = 0;
+    private float allReliance = 0f;
 
     public void startSearch() {
+        count = 0;
+        allReliance = 0f;
         dataList = new ArrayList<>();
         for (String w : word) {
             if (!w.isEmpty()) {
                 try {
                     LuceneMorphology luceneMorphology = new Lucene(w.toLowerCase(Locale.ROOT)).getLuceneMorphology();
                     String correctWord = luceneMorphology.getNormalForms(w.toLowerCase(Locale.ROOT)).get(0);
-                    if (url != null) {
-                        indexRepository.findFirst10ByLemmaId_Lemma(w.toLowerCase(Locale.ROOT));
-                        dataList.addAll(getListData(correctWord, url));
-                    } else {
-                        for (Site site : sitesList.getSites()) {
-                            //Optional<Index> indices = indexRepository.findFirst10ByLemmaId_LemmaAndLemmaId_SiteId_Url(correctWord, site.getUrl());
-                            dataList.addAll(getListData(correctWord, site.getUrl()));
-                        }
-                    }
+                    dataList.addAll(getListData(correctWord));
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -72,36 +65,48 @@ public class SearchByWord {
         }
     }
 
-    private List<Data> getListData(String correctWord, String url) {
-        System.out.println("getData");
+    private List<Data> getListData(String correctWord) {
+        Optional<Integer> count;
+        List<Index> indices;
+        if (url == null) {
+            count = indexRepository.getRankOnAllSites(correctWord);
+            indices = indexRepository.findAllByLemmaId_LemmaOrderByLemmaId_frequency(correctWord);
+        } else {
+            count = indexRepository.getRankOnOneSite(url, correctWord);
+            indices = indexRepository.findAllByLemmaId_lemmaAndPageId_SiteId_urlOrderByLemmaId_frequency(correctWord, url);
+        }
+        return new ArrayList<>(dataListCreator(indices, count, correctWord));
+    }
+
+    private List<Data> dataListCreator(List<Index> indices, Optional<Integer> getCount, String correctWord) {
         List<Data> list = new ArrayList<>();
-        Optional<Integer> count = Optional.ofNullable(indexRepository.getRank(url, correctWord));
-        Optional<searchengine.model.Site> site = Optional.ofNullable(siteRepository.findByUrl(url));
-        Iterable<Index> i = indexRepository.findTop10ByLemmaId_lemmaAndPageId_SiteId_urlOrderByLemmaId_frequencyDesc(correctWord, url);
-        AtomicReference<Float> allReliance = new AtomicReference<>(0f);
-        if (site.isPresent()) {
-            System.out.println("\n i " + i.toString() + "\n");
-            i.forEach(index -> {
+        getCount.ifPresent(integer -> count = integer);
+        System.out.println(indices.size());
+        for (Index index : indices){
+            System.out.println("\n\n"+index.getPageId().getSiteId().getName()+"\n\n");
+            Optional<searchengine.model.Site> site = Optional.ofNullable(siteRepository.findByUrl(index.getPageId().getSiteId().getUrl()));
+            if (site.isPresent()) {
                 float reliance = index.getRank();
                 Page page = index.getPageId();
-                Data data = getData(correctWord, site.get(), reliance, page);
-                allReliance.set(allReliance.get() + reliance);
-                list.add(data);
-            });
+                allReliance+= reliance;
+                list.add(dataCreator(correctWord, site.get(), reliance, page));
+            }
         }
         for (Data data : list) {
-            System.out.println("all allReliance:" + allReliance
-                    + "\n data.getRelevance()" + data.getRelevance());
-            data.setRelevance(data.getRelevance() / allReliance.get());
+            data.setRelevance(data.getRelevance() / allReliance);
         }
         return list;
     }
 
-    private Data getData(String correctWord, searchengine.model.Site site, float reliance, Page page) {
-        Data data = new Data() ;
-        data.setSite(site.getUrl() + "/");
+    private Data dataCreator(String correctWord, searchengine.model.Site site, float reliance, Page page) {
+        Data data = new Data();
+        data.setSite(site.getUrl());
         data.setSiteName(site.getName());
-        data.setUrl(page.getPath());
+        String path = page.getPath();
+        if (!path.startsWith("/")){
+            path="/"+path;
+        }
+        data.setUrl(path);
         data.setSnippet("<b>" + setSnippet(page.getContent(), correctWord) + "</b>");
         data.setTitle(setTitle(page.getContent()));
         data.setRelevance(reliance);
@@ -133,9 +138,5 @@ public class SearchByWord {
         int start = content.indexOf("<title>");
         int end = content.indexOf("</title>");
         return content.substring(start, end + 8);
-    }
-
-    private float setRelevance() {
-        return 0.0f;
     }
 }
