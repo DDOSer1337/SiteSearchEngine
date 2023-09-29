@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import searchengine.model.Lemma;
 import searchengine.model.Site;
 import searchengine.repositories.LemmaRepository;
+import searchengine.services.IndexingImpl;
 
 import java.io.IOException;
 import java.util.*;
@@ -18,6 +19,7 @@ public class LemmaCreator {
     private final Document document;
     private final Site site;
     private List<Lemma> list;
+    private final boolean canStop;
 
     public List<Lemma> getListLemmas() {
         return list;
@@ -28,12 +30,18 @@ public class LemmaCreator {
         List<String> allText = Arrays.stream(document.text().split(" ")).toList();
         allText.forEach(word -> {
             try {
-                Lemma lemma = createLemma(word);
-                if (lemma != null) {
-                    Optional<Lemma> optionalLemma = lemmaRepository.findByLemma(lemma.getLemma());
-                    if (optionalLemma.isPresent()) {
-                        lemma = optionalLemma.get();
-                        list.add(lemma);
+                boolean neadStop = false;
+                if (canStop) {
+                    neadStop = IndexingImpl.isIndexing.get();
+                }
+                if (!neadStop) {
+                    Lemma lemma = createLemma(word);
+                    if (lemma != null) {
+                        Optional<Lemma> optionalLemma = lemmaRepository.findByLemmaAndSiteId_name(lemma.getLemma(), site.getName());
+                        if (optionalLemma.isPresent()) {
+                            lemma = optionalLemma.get();
+                            list.add(lemma);
+                        }
                     }
                 }
             } catch (IOException e) {
@@ -50,11 +58,11 @@ public class LemmaCreator {
             Lemma lemma = new Lemma();
             lemma.setLemma(word);
             lemma.setSiteId(site);
-            if (lemmaRepository.existsByLemmaAndSiteId(lemma.getLemma(), lemma.getSiteId())) {
-                lemmaRepository.updateFrequency(lemma.getLemma(), lemma.getSiteId().getId());
-            } else {
+            if (!lemmaRepository.existsByLemmaAndSiteId_name(lemma.getLemma(), lemma.getSiteId().getName())) {
                 lemma.setFrequency(1);
                 lemmaRepository.save(lemma);
+            } else {
+                lemmaRepository.updateFrequency(lemma.getLemma(), lemma.getSiteId().getId());
             }
             return lemma;
         }
