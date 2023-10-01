@@ -1,4 +1,4 @@
-package searchengine.Busines.repositories;
+package searchengine.repositories;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;

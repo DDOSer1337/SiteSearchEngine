@@ -10,9 +10,9 @@ import searchengine.dto.statistics.StatisticsData;
 import searchengine.dto.statistics.StatisticsResponse;
 import searchengine.dto.statistics.TotalStatistics;
 import searchengine.model.Site;
-import searchengine.Busines.repositories.LemmaRepository;
-import searchengine.Busines.repositories.PageRepository;
-import searchengine.Busines.repositories.SiteRepository;
+import searchengine.repositories.LemmaRepository;
+import searchengine.repositories.PageRepository;
+import searchengine.repositories.SiteRepository;
 import searchengine.services.Interface.StatisticsService;
 
 import java.util.ArrayList;

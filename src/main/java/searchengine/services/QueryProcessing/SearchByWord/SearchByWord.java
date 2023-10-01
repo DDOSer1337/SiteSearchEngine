@@ -16,10 +16,10 @@ import searchengine.config.SitesList;
 import searchengine.dto.searchByWord.Data;
 import searchengine.model.Index;
 import searchengine.model.Page;
-import searchengine.Busines.repositories.IndexRepository;
-import searchengine.Busines.repositories.LemmaRepository;
-import searchengine.Busines.repositories.PageRepository;
-import searchengine.Busines.repositories.SiteRepository;
+import searchengine.repositories.IndexRepository;
+import searchengine.repositories.LemmaRepository;
+import searchengine.repositories.PageRepository;
+import searchengine.repositories.SiteRepository;
 
 import java.io.IOException;
 import java.util.ArrayList;

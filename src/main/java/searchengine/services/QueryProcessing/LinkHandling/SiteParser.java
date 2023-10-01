@@ -7,10 +7,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import searchengine.config.SitesList;
 import searchengine.model.Site;
-import searchengine.Busines.repositories.IndexRepository;
-import searchengine.Busines.repositories.LemmaRepository;
-import searchengine.Busines.repositories.PageRepository;
-import searchengine.Busines.repositories.SiteRepository;
+import searchengine.repositories.IndexRepository;
+import searchengine.repositories.LemmaRepository;
+import searchengine.repositories.PageRepository;
+import searchengine.repositories.SiteRepository;
 import searchengine.services.IndexingImpl;
 
 import java.util.Collections;
