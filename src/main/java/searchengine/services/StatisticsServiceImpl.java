@@ -4,19 +4,17 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import searchengine.Busines.DBConnector;
 import searchengine.config.SitesList;
 import searchengine.dto.statistics.DetailedStatisticsItem;
 import searchengine.dto.statistics.StatisticsData;
 import searchengine.dto.statistics.StatisticsResponse;
 import searchengine.dto.statistics.TotalStatistics;
 import searchengine.model.Site;
-import searchengine.repositories.LemmaRepository;
-import searchengine.repositories.PageRepository;
-import searchengine.repositories.SiteRepository;
+import searchengine.Busines.repositories.LemmaRepository;
+import searchengine.Busines.repositories.PageRepository;
+import searchengine.Busines.repositories.SiteRepository;
 import searchengine.services.Interface.StatisticsService;
 
-import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -41,8 +39,6 @@ public class StatisticsServiceImpl implements StatisticsService {
 
     @Override
     public StatisticsResponse getStatistics() {
-        DBConnector dbConnector = new DBConnector();
-        Connection connection = dbConnector.getConnection();
         TotalStatistics totalStatistics = new TotalStatistics();
         totalStatistics.setSites(sites.getSites().size());
         totalStatistics.setIndexing(true);
@@ -62,7 +58,6 @@ public class StatisticsServiceImpl implements StatisticsService {
             data.setDetailed(detailed);
             response.setStatistics(data);
             response.setResult(true);
-            connection.close();
 
         } catch (Exception e) {
             totalStatistics.setPages(0);

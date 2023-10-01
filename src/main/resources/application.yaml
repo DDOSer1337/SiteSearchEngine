@@ -10,7 +10,7 @@ spring:
         dialect: org.hibernate.dialect.MySQL8Dialect
     show-sql: true
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
     mysql:
       cj:
         jdbc:
@@ -20,12 +20,7 @@ indexing-settings:
   sites:
     - url: https://www.lenta.ru
       name: lenta.ru
-    - url: https://www.skillbox.ru
-      name: skillbox.ru
     - url: https://www.playback.ru
       name: PlayBack.Ru
-logging:
-  level:
-    org:
-      hibernate:
-        type: info
+    - url: https://www.skillbox.ru
+      name: skillbox.ru

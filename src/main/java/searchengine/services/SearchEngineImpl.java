@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import searchengine.Busines.SearchByWord.SearchByWord;
+import searchengine.services.QueryProcessing.SearchByWord.SearchByWord;
 import searchengine.dto.result.FailedResult;
 import searchengine.dto.result.Result;
 import searchengine.dto.searchByWord.Data;

@@ -1,4 +1,4 @@
-package searchengine.Busines.AddOrUpdatePage;
+package searchengine.services.QueryProcessing.AddOrUpdatePage;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -9,17 +9,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import searchengine.Busines.LemmaCreator;
+import searchengine.services.QueryProcessing.LemmaCreator;
 import searchengine.dto.result.FailedResult;
 import searchengine.dto.result.Result;
 import searchengine.model.Index;
 import searchengine.model.Lemma;
 import searchengine.model.Page;
 import searchengine.model.Site;
-import searchengine.repositories.IndexRepository;
-import searchengine.repositories.LemmaRepository;
-import searchengine.repositories.PageRepository;
-import searchengine.repositories.SiteRepository;
+import searchengine.Busines.repositories.IndexRepository;
+import searchengine.Busines.repositories.LemmaRepository;
+import searchengine.Busines.repositories.PageRepository;
+import searchengine.Busines.repositories.SiteRepository;
 
 import java.io.IOException;
 import java.util.List;
@@ -63,7 +63,7 @@ public class PageIndexer {
         }
     }
 
-    public void pageIndexing() {
+    private void pageIndexing() {
         if (isURL(url)) {
             Connection connection = Jsoup.connect(url)
                     .userAgent("Mozilla/5.0 (Windows; U; WindowsNT " +

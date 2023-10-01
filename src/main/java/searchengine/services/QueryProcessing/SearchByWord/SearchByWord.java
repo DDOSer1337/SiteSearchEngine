@@ -1,4 +1,4 @@
-package searchengine.Busines.SearchByWord;
+package searchengine.services.QueryProcessing.SearchByWord;
 
 
 import lombok.Getter;
@@ -11,15 +11,15 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import searchengine.Busines.Lucene;
+import searchengine.services.QueryProcessing.Lucene;
 import searchengine.config.SitesList;
 import searchengine.dto.searchByWord.Data;
 import searchengine.model.Index;
 import searchengine.model.Page;
-import searchengine.repositories.IndexRepository;
-import searchengine.repositories.LemmaRepository;
-import searchengine.repositories.PageRepository;
-import searchengine.repositories.SiteRepository;
+import searchengine.Busines.repositories.IndexRepository;
+import searchengine.Busines.repositories.LemmaRepository;
+import searchengine.Busines.repositories.PageRepository;
+import searchengine.Busines.repositories.SiteRepository;
 
 import java.io.IOException;
 import java.util.ArrayList;

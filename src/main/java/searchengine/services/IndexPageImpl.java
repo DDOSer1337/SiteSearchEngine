@@ -3,7 +3,7 @@ package searchengine.services;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import searchengine.Busines.AddOrUpdatePage.PageIndexer;
+import searchengine.services.QueryProcessing.AddOrUpdatePage.PageIndexer;
 import searchengine.services.Interface.IndexPage;
 
 @Service

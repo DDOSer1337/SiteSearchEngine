@@ -1,4 +1,4 @@
-package searchengine.Busines.LinkHandling;
+package searchengine.services.QueryProcessing.LinkHandling;
 
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -7,16 +7,16 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import searchengine.Busines.LemmaCreator;
+import searchengine.services.QueryProcessing.LemmaCreator;
 import searchengine.model.Enum.SiteStatus;
 import searchengine.model.Index;
 import searchengine.model.Lemma;
 import searchengine.model.Page;
 import searchengine.model.Site;
-import searchengine.repositories.IndexRepository;
-import searchengine.repositories.LemmaRepository;
-import searchengine.repositories.PageRepository;
-import searchengine.repositories.SiteRepository;
+import searchengine.Busines.repositories.IndexRepository;
+import searchengine.Busines.repositories.LemmaRepository;
+import searchengine.Busines.repositories.PageRepository;
+import searchengine.Busines.repositories.SiteRepository;
 import searchengine.services.IndexingImpl;
 
 import java.io.IOException;

@@ -1,4 +1,4 @@
-package searchengine.Busines;
+package searchengine.services.QueryProcessing;
 
 import lombok.RequiredArgsConstructor;
 import org.apache.lucene.morphology.LuceneMorphology;
@@ -6,7 +6,7 @@ import org.jsoup.nodes.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import searchengine.model.Lemma;
 import searchengine.model.Site;
-import searchengine.repositories.LemmaRepository;
+import searchengine.Busines.repositories.LemmaRepository;
 import searchengine.services.IndexingImpl;
 
 import java.io.IOException;
