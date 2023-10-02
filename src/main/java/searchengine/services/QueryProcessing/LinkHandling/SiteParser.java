@@ -32,7 +32,7 @@ public class SiteParser {
     private final LemmaRepository lemmaRepository;
     @Autowired
     private final IndexRepository indexRepository;
-    private final LinkParser linkCrawler;
+    private final LinkParser linkParser;
 
 
     public void startParse() {
@@ -49,11 +49,11 @@ public class SiteParser {
                     siteRepository.deleteByName(site.getName());
                 }
                 siteRepository.save(site);
-                linkCrawler.setDomain(domain);
-                linkCrawler.setCurrentLink(siteFromList.getUrl());
-                linkCrawler.setSite(site);
-                linkCrawler.setVerifiedLinks(verifiedLinks);
-                linkCrawler.compute();
+                linkParser.setDomain(domain);
+                linkParser.setCurrentLink(siteFromList.getUrl());
+                linkParser.setSite(site);
+                linkParser.setVerifiedLinks(verifiedLinks);
+                linkParser.compute();
             }
         }
     }

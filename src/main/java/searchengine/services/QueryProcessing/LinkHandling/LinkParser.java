@@ -68,24 +68,26 @@ public class LinkParser extends RecursiveAction {
     }
 
     private void recursiveActionFork(String newLink, Connection connection) throws IOException {
-        Optional<Site> site = Optional.ofNullable(siteRepository.findByName(domain));
-        if (site.isPresent()) {
-            Page page = new Page(newLink, connection.get(), domain, site.get(), connection.execute().statusCode());
-            if (IndexingImpl.isIndexing.get()) {
-                if (!pageExist(page) && page.getPath()!=null) {
-                    pageRepository.save(page);
-                    page = pageRepository.findByPathAndSiteId_Name(page.getPath(),site.get().getName());
-                    List<Lemma> list = getLemmas(connection, site.get());
-                    for (Lemma lemma : list) {
-                        if (IndexingImpl.isIndexing.get() && lemma != null) {
-                            indexCreator(page, lemma);
-                            forking(newLink);
-                        } else {
-                            endSiteSearch();
+        if (IndexingImpl.isIndexing.get()) {
+            Optional<Site> site = Optional.ofNullable(siteRepository.findByName(domain));
+            if (site.isPresent()) {
+                Page page = new Page(newLink, connection.get(), domain, site.get(), connection.execute().statusCode());
+                if (IndexingImpl.isIndexing.get()) {
+                    if (!pageExist(page) && page.getPath() != null && page.getPath().startsWith("/")) {
+                        pageRepository.save(page);
+                        page = pageRepository.findByPathAndSiteId_Name(page.getPath(), site.get().getName());
+                        List<Lemma> list = getLemmas(connection, site.get());
+                        for (Lemma lemma : list) {
+                            if (IndexingImpl.isIndexing.get() && lemma != null) {
+                                indexCreator(page, lemma);
+                                forking(newLink);
+                            } else {
+                                endSiteSearch();
+                            }
                         }
+                    } else {
+                        endSiteSearch();
                     }
-                } else {
-                    endSiteSearch();
                 }
             }
         }
@@ -100,7 +102,7 @@ public class LinkParser extends RecursiveAction {
     }
 
     private List<Lemma> getLemmas(Connection connection, Site site) throws IOException {
-        LemmaCreator lemmaCreator = new LemmaCreator(lemmaRepository, connection.get(), site,true);
+        LemmaCreator lemmaCreator = new LemmaCreator(lemmaRepository, connection.get(), site, true);
         lemmaCreator.createLemmas();
         return lemmaCreator.getListLemmas();
     }

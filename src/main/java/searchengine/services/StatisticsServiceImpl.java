@@ -73,7 +73,6 @@ public class StatisticsServiceImpl implements StatisticsService {
 
     private DetailedStatisticsItem getDetailedStatisticsItem(searchengine.config.Site sites) {
         DetailedStatisticsItem item = new DetailedStatisticsItem();
-        System.out.println(sites.getName());
         Optional<Site> site = Optional.ofNullable(siteRepository.findByName(sites.getName()));
         if (site.isPresent()) {
             item.setStatusTime(site.get().getStatusTime().getNano());

@@ -23,7 +23,6 @@ public class SearchEngineImpl implements SearchEngine {
     public ResponseEntity<?> search(String siteName, String[] word, int offset) {
         Result result = new Result();
         if (!word[0].isEmpty()) {
-
             result.setResult(true);
             SuccessSearchResult successResult = new SuccessSearchResult();
             successResult.setResult(result.isResult());

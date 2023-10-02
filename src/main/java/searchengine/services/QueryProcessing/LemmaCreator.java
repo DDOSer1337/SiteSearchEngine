@@ -29,30 +29,35 @@ public class LemmaCreator {
         list = new ArrayList<>();
         List<String> allText = Arrays.stream(document.text().split(" ")).toList();
         allText.forEach(word -> {
-            try {
-                boolean neadStop = false;
+            Lemma lemma = createLemma(word);
+            if (lemma != null) {
                 if (canStop) {
-                    neadStop = IndexingImpl.isIndexing.get();
-                }
-                if (!neadStop) {
-                    Lemma lemma = createLemma(word);
-                    if (lemma != null) {
+                    if (IndexingImpl.isIndexing.get()) {
                         Optional<Lemma> optionalLemma = lemmaRepository.findByLemmaAndSiteId_name(lemma.getLemma(), site.getName());
                         if (optionalLemma.isPresent()) {
                             lemma = optionalLemma.get();
                             list.add(lemma);
                         }
                     }
+                } else {
+                    Optional<Lemma> optionalLemma = lemmaRepository.findByLemmaAndSiteId_name(lemma.getLemma(), site.getName());
+                    if (optionalLemma.isPresent()) {
+                        lemma = optionalLemma.get();
+                        list.add(lemma);
+                    }
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
             }
         });
     }
 
-    private Lemma createLemma(String textWord) throws IOException {
+    private Lemma createLemma(String textWord) {
         String word2lower = textWord.toLowerCase(Locale.ROOT).trim();
-        LuceneMorphology luceneMorphology = new Lucene(word2lower).getLuceneMorphology();
+        LuceneMorphology luceneMorphology = null;
+        try {
+            luceneMorphology = new Lucene(word2lower).getLuceneMorphology();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         if (luceneMorphology != null && textWord.matches("^([a-zа-яё]+|\\d+)$")) {
             String word = luceneMorphology.getNormalForms(word2lower).get(0);
             Lemma lemma = new Lemma();
