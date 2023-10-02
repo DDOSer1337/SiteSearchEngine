@@ -50,7 +50,7 @@ public class Site implements Serializable {
     public Site(String url, String name) {
         this.siteStatus = SiteStatus.INDEXING;
         this.statusTime = LocalDateTime.now();
-        this.url = url;
+        this.url = url+"/";
         if (name.startsWith("www.")) {
             this.name = name.substring(4);
         } else {

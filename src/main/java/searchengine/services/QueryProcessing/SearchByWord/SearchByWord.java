@@ -81,9 +81,7 @@ public class SearchByWord {
     private List<Data> dataListCreator(List<Index> indices, Optional<Integer> getCount, String correctWord) {
         List<Data> list = new ArrayList<>();
         getCount.ifPresent(integer -> count = integer);
-        System.out.println(indices.size());
         for (Index index : indices){
-            System.out.println("\n\n"+index.getPageId().getSiteId().getName()+"\n\n");
             Optional<searchengine.model.Site> site = Optional.ofNullable(siteRepository.findByUrl(index.getPageId().getSiteId().getUrl()));
             if (site.isPresent()) {
                 float reliance = index.getRank();
@@ -103,11 +101,8 @@ public class SearchByWord {
         data.setSite(site.getUrl());
         data.setSiteName(site.getName());
         String path = page.getPath();
-        if (!path.startsWith("/")){
-            path="/"+path;
-        }
         data.setUrl(path);
-        data.setSnippet("<b>" + setSnippet(page.getContent(), correctWord) + "</b>");
+        data.setSnippet(setSnippet(page.getContent(), correctWord));
         data.setTitle(setTitle(page.getContent()));
         data.setRelevance(reliance);
         return data;
@@ -130,8 +125,7 @@ public class SearchByWord {
         for (Element element : elements) {
             snippet.append(element.outerHtml());
         }
-
-        return snippet.toString();
+        return snippet.toString().replaceAll(wordToFind, "<b>" + wordToFind +" "+ "</b>");
     }
 
     private String setTitle(String content) {
