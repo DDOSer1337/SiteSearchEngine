@@ -29,7 +29,6 @@ import java.util.List;
 @Getter
 @RequiredArgsConstructor
 public class PageIndexer {
-    private int count = 0;
     @Autowired
     private final IndexRepository indexRepository;
     @Autowired
@@ -46,7 +45,7 @@ public class PageIndexer {
     public ResponseEntity<?> AddOrUpdatePage(String url) {
         this.url = url;
         domain = url.split("/")[2];
-        String siteName = getSiteName(domain);
+        String siteName = domain.startsWith("www.")?domain.substring(4):domain;
         if (siteRepository.existsByName(siteName)) {
             site = siteRepository.findByName(siteName);
             new Thread(this::pageIndexing).start();
@@ -80,16 +79,6 @@ public class PageIndexer {
         }
     }
 
-    private String getSiteName(String domain) {
-        String siteName = "";
-        if (domain.startsWith("www.")) {
-            siteName = domain.substring(4);
-        } else {
-            siteName = domain;
-        }
-        return siteName;
-    }
-
     private void saveOrDeletePage(Page page) {
         if (pageExist(page)) {
             pageRepository.deleteByPath(page.getPath());
@@ -105,9 +94,6 @@ public class PageIndexer {
         List<Lemma> list = getLemmas(connection, page.getSiteId());
         for (Lemma lemma : list) {
             indexCreator(page, lemma);
-            if (count % 10 == 0) {
-                System.out.println(count);
-            }
         }
     }
 
@@ -119,7 +105,6 @@ public class PageIndexer {
 
     private void indexCreator(Page page, Lemma lemma) {
         Index index = new Index(page, lemma);
-        count++;
         if (!indexRepository.existsByLemmaIdAndPageId(lemma, page)) {
             indexRepository.save(index);
         } else {

@@ -21,11 +21,13 @@ public interface LemmaRepository extends CrudRepository<Lemma,Long> {
 
     @Modifying
     @Transactional
-    @Query(value ="UPDATE lemmas SET `frequency` = `frequency` + 1 WHERE lemma = :lemma and sites_id = :sitesID",nativeQuery = true)
+    @Query(value ="UPDATE lemmas SET `frequency` = `frequency` + 1 " +
+            "WHERE lemma = :lemma and sites_id = :sitesID",nativeQuery = true)
     void updateFrequency(@Param("lemma") String lemma, @Param("sitesID") int sitesID);
 
 
-    @Query(value ="Select `frequency` from skillbox.lemmas WHERE lemma = :lemma and sites_id = :sitesID",nativeQuery = true)
+    @Query(value ="Select `frequency` from skillbox.lemmas " +
+            "WHERE lemma = :lemma and sites_id = :sitesID",nativeQuery = true)
     Integer getFrequency(@Param("lemma") String lemma, @Param("sitesID") int sitesID);
 
     @Query(value ="SELECT sum(frequency) FROM skillbox.lemmas",nativeQuery = true)

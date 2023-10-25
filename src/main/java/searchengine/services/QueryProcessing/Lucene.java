@@ -21,8 +21,7 @@ public class Lucene {
         if (isNotPartOfSpeech() && isNotOneLetter() && isNotFunctionalPartsOfSpeech()) {
             return isRussian() ? new RussianLuceneMorphology()
                     : isEnglish() ? new EnglishLuceneMorphology() : null;
-        }
-        else {
+        } else {
             return null;
         }
     }
@@ -37,14 +36,15 @@ public class Lucene {
 
     public boolean isNotPartOfSpeech() {
         return !(word.endsWith("Н") || word.endsWith("МЕЖД") || word.endsWith("СОЮЗ") || word.endsWith("ПРЕДЛ") ||
-                word.endsWith("ЧАСТ") ||
-                word.endsWith("PREP") || word.endsWith("ADJECTIVE") || word.endsWith("CONJ") ||
+                word.endsWith("ЧАСТ") || word.endsWith("PREP") || word.endsWith("ADJECTIVE") || word.endsWith("CONJ") ||
                 word.endsWith("ARTICLE") || word.endsWith("ADVERB"));
     }
-    public boolean isNotOneLetter(){
+
+    public boolean isNotOneLetter() {
         return word.length() != 1;
     }
-    private boolean isNotFunctionalPartsOfSpeech(){
+
+    private boolean isNotFunctionalPartsOfSpeech() {
         return !Arrays.stream(l).toList().contains(word);
     }
 

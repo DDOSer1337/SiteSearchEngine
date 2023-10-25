@@ -38,7 +38,6 @@ public class IndexingImpl implements Indexing {
     public ResponseEntity<?> start() {
         Result result = new Result();
         if (!isIndexing.get()) {
-            System.out.println("not indexed " + isIndexing.get());
             synchronized (isIndexing) {
                 isIndexing.getAndSet(true);
             }
@@ -48,7 +47,6 @@ public class IndexingImpl implements Indexing {
             successResult.setResult(result);
             return ResponseEntity.status(HttpStatus.OK).body(successResult);
         } else {
-            System.out.println("indexed " + isIndexing.get());
             result.setResult(false);
             FailedResult failedResult = new FailedResult();
             failedResult.setResult(result);

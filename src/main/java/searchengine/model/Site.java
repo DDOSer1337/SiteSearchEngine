@@ -51,11 +51,7 @@ public class Site implements Serializable {
         this.siteStatus = SiteStatus.INDEXING;
         this.statusTime = LocalDateTime.now();
         this.url = url+"/";
-        if (name.startsWith("www.")) {
-            this.name = name.substring(4);
-        } else {
-            this.name = name;
-        }
+        this.name = name.startsWith("www.")?name.substring(4):name;
         this.lastError = "";
     }
 

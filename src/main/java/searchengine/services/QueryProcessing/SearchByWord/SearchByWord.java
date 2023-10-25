@@ -117,20 +117,20 @@ public class SearchByWord {
     }
 
     private String setSnippet(String htmlCode, String wordToFind) {
-        StringBuilder snippet = new StringBuilder();
-
         Document doc = Jsoup.parse(htmlCode);
         Elements elements = doc.getElementsContainingOwnText(wordToFind);
 
-        for (Element element : elements) {
-            snippet.append(element.outerHtml());
+        if (elements.size() > 0) {
+            for (int i = 0; i < elements.size(); i++) {
+                return elements.get(i).text().replaceAll(wordToFind,"<b>"+wordToFind+"</b>");
+            }
         }
-        return snippet.toString().replaceAll(wordToFind, "<b>" + wordToFind +" "+ "</b>");
+        return "";
     }
 
     private String setTitle(String content) {
         int start = content.indexOf("<title>");
         int end = content.indexOf("</title>");
-        return content.substring(start, end + 8);
+        return content.substring(start+7, end);
     }
 }
