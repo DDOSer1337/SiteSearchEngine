@@ -12,6 +12,8 @@ import searchengine.services.IndexingImpl;
 import java.io.IOException;
 import java.util.*;
 
+import static searchengine.controllers.ApiController.isIndexing;
+
 @RequiredArgsConstructor
 public class LemmaCreator {
     @Autowired
@@ -32,7 +34,7 @@ public class LemmaCreator {
             Lemma lemma = createLemma(word);
             if (lemma != null) {
                 if (canStop) {
-                    if (IndexingImpl.isIndexing.get()) {
+                    if (isIndexing.get()) {
                         Optional<Lemma> optionalLemma = lemmaRepository.findByLemmaAndSiteId_name(lemma.getLemma(), site.getName());
                         if (optionalLemma.isPresent()) {
                             lemma = optionalLemma.get();

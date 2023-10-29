@@ -23,6 +23,8 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.RecursiveAction;
 
+import static searchengine.controllers.ApiController.isIndexing;
+
 @RequiredArgsConstructor
 @Setter
 @Service
@@ -42,7 +44,7 @@ public class LinkParser extends RecursiveAction {
 
     @Override
     protected void compute() {
-        if (IndexingImpl.isIndexing.get() && !verifiedLinks.contains(currentLink)) {
+        if (isIndexing.get() && !verifiedLinks.contains(currentLink)) {
             linkChecking();
         }
     }
@@ -68,16 +70,16 @@ public class LinkParser extends RecursiveAction {
     }
 
     private void recursiveActionFork(String newLink, Connection connection) throws IOException {
-        if (IndexingImpl.isIndexing.get()) {
+        if (isIndexing.get()) {
             Optional<Site> site = Optional.ofNullable(siteRepository.findByName(domain));
-            if (IndexingImpl.isIndexing.get() && site.isPresent()) {
+            if (isIndexing.get() && site.isPresent()) {
                 Page page = new Page(newLink, connection.get(), domain, site.get(), connection.execute().statusCode());
                 if (!pageExist(page) && page.getPath() != null && page.getPath().startsWith("/")) {
                     pageRepository.save(page);
                     page = pageRepository.findByPathAndSiteId_Name(page.getPath(), site.get().getName());
                     List<Lemma> list = getLemmas(connection, site.get());
                     for (Lemma lemma : list) {
-                        if (IndexingImpl.isIndexing.get() && lemma != null) {
+                        if (isIndexing.get() && lemma != null) {
                             indexCreator(page, lemma);
                             forking(newLink);
                         } else {
@@ -115,7 +117,7 @@ public class LinkParser extends RecursiveAction {
     }
 
     private void forking(String newLink) {
-        if (IndexingImpl.isIndexing.get()) {
+        if (isIndexing.get()) {
             LinkParser linkCrawler = new LinkParser(siteRepository, pageRepository, lemmaRepository, indexRepository);
             linkCrawler.setCurrentLink(newLink);
             linkCrawler.setDomain(domain);

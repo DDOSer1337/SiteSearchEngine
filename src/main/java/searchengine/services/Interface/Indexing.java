@@ -6,7 +6,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 
 public interface Indexing {
-    AtomicBoolean isIndexing = new AtomicBoolean(false);
     ResponseEntity<?> stop();
     ResponseEntity<?> start();
 }

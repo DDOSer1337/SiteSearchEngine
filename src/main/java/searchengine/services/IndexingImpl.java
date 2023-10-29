@@ -10,6 +10,8 @@ import searchengine.dto.result.Result;
 import searchengine.dto.result.SuccessResult;
 import searchengine.services.Interface.Indexing;
 
+import static searchengine.controllers.ApiController.isIndexing;
+
 @Service
 @RequiredArgsConstructor
 public class IndexingImpl implements Indexing {

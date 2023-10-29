@@ -18,6 +18,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static searchengine.controllers.ApiController.isIndexing;
+
 @Service @Getter @Setter
 @RequiredArgsConstructor
 public class SiteParser {
@@ -39,7 +41,7 @@ public class SiteParser {
         List<searchengine.config.Site> listSites = sitesList.getSites();
         for (searchengine.config.Site siteFromList : listSites) {
             String url = siteFromList.getUrl();
-            if (IndexingImpl.isIndexing.get() && isURL(url)) {
+            if (isIndexing.get() && isURL(url)) {
                 domain = url.split("/")[2];
                 if (domain.startsWith("www.")) {
                     domain = domain.substring(4);

@@ -8,6 +8,8 @@ import searchengine.services.Interface.Indexing;
 import searchengine.services.Interface.SearchEngine;
 import searchengine.services.Interface.StatisticsService;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 @RestController
 @RequestMapping("/api")
 public class ApiController {
@@ -16,6 +18,7 @@ public class ApiController {
     private final Indexing indexing;
     private final SearchEngine searchEngine;
     private final IndexPage indexPage;
+    public static AtomicBoolean isIndexing = new AtomicBoolean(false);
 
     public ApiController(StatisticsService statisticsService, Indexing indexing, SearchEngine searchEngine, IndexPage indexPage) {
         this.statisticsService = statisticsService;
