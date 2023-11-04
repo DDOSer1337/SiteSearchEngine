@@ -22,5 +22,5 @@ public interface SiteRepository extends CrudRepository<Site,Long> {
     @Transactional
     @Modifying
     @Query(value ="Update sites Set site_status = :status WHERE name = :name",nativeQuery = true)
-    void UpdateErrorByName(@Param("name") String name, @Param("status")String siteStatus);
+    void UpdateStatusByName(@Param("name") String name, @Param("status")String siteStatus);
 }
