@@ -17,7 +17,6 @@ import searchengine.repositories.IndexRepository;
 import searchengine.repositories.LemmaRepository;
 import searchengine.repositories.PageRepository;
 import searchengine.repositories.SiteRepository;
-import searchengine.services.IndexingImpl;
 
 import java.io.IOException;
 import java.util.*;
@@ -64,53 +63,56 @@ public class LinkParser extends RecursiveAction {
             }
             verifiedLinks.add(currentLink);
         } catch (IOException e) {
-            exceptionSite(site);
+            siteRepository.UpdateStatusByName(site.getName(), SiteStatus.FAILED.toString());
             e.printStackTrace();
         }
     }
 
     private void recursiveActionFork(String newLink, Connection connection) throws IOException {
-        if (isIndexing.get()) {
+        if (isIndexing.get() && !newLink.endsWith(".jpg")) {
             Optional<Site> site = Optional.ofNullable(siteRepository.findByName(domain));
             if (isIndexing.get() && site.isPresent()) {
-                Page page = new Page(newLink, connection.get(), domain, site.get(), connection.execute().statusCode());
-                if (!pageExist(page) && page.getPath() != null && page.getPath().startsWith("/")) {
-                    pageRepository.save(page);
-                    page = pageRepository.findByPathAndSiteId_Name(page.getPath(), site.get().getName());
-                    List<Lemma> list = getLemmas(connection, site.get());
-                    for (Lemma lemma : list) {
-                        if (isIndexing.get() && lemma != null) {
-                            indexCreator(page, lemma);
-                            forking(newLink);
-                        } else {
-                            endSiteSearch();
-                        }
-                    }
-                } else {
-                    endSiteSearch();
-                }
+                checkPage(newLink, connection, site.get());
             }
         }
     }
 
-    private boolean pageExist(Page page) {
-        if (domain.startsWith("www.")) {
-            return pageRepository.existsByPathAndSiteId_name(page.getPath(), domain.substring(4));
-        } else {
-            return pageRepository.existsByPathAndSiteId_name(page.getPath(), domain);
+    private void checkPage(String newLink, Connection connection, Site site) throws IOException {
+        Page page = new Page(newLink, connection.get(), domain, site, connection.execute().statusCode());
+        if (!pageExist(page) && page.getPath() != null && page.getPath().startsWith("/")) {
+            savePageAndGetListLemma(newLink, connection, site, page);
         }
     }
+    private boolean pageExist(Page page) {
+        return domain.startsWith("www.")
+                ? pageRepository.existsByPathAndSiteId_name(page.getPath(), domain.substring(4))
+                : pageRepository.existsByPathAndSiteId_name(page.getPath(), domain);
+    }
 
+    private void savePageAndGetListLemma(String newLink, Connection connection, Site site, Page page) throws IOException {
+        pageRepository.save(page);
+        page = pageRepository.findByPathAndSiteId_Name(page.getPath(), site.getName());
+        List<Lemma> list = getLemmas(connection, site);
+        for (Lemma lemma : list) {
+            createIndexAndFork(newLink, page, lemma);
+        }
+    }
     private List<Lemma> getLemmas(Connection connection, Site site) throws IOException {
         LemmaCreator lemmaCreator = new LemmaCreator(lemmaRepository, connection.get(), site, true);
         lemmaCreator.createLemmas();
         return lemmaCreator.getListLemmas();
     }
 
+    private void createIndexAndFork(String newLink, Page page, Lemma lemma) {
+        if (isIndexing.get() && lemma != null) {
+            indexCreator(page, lemma);
+            forking(newLink);
+        }
+    }
+
     private void indexCreator(Page page, Lemma lemma) {
-        Index index = new Index(page, lemma);
         if (!indexRepository.existsByLemmaIdAndPageId(lemma, page)) {
-            indexRepository.save(index);
+            indexRepository.save(new Index(page, lemma));
         } else {
             indexRepository.upRank(page.getId(), lemma.getId());
         }
@@ -125,16 +127,6 @@ public class LinkParser extends RecursiveAction {
             linkCrawler.setSite(site);
             linkCrawler.setVerifiedLinks(verifiedLinks);
             linkCrawler.fork();
-        } else {
-            endSiteSearch();
         }
-    }
-
-    private void exceptionSite(Site site) {
-        siteRepository.UpdateErrorByName(site.getName(), SiteStatus.FAILED.toString());
-    }
-
-    private void endSiteSearch() {
-        siteRepository.UpdateErrorByName(site.getName(), SiteStatus.INDEXED.toString());
     }
 }
