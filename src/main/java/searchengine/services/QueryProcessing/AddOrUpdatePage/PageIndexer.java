@@ -47,7 +47,6 @@ public class PageIndexer {
         domain = url.split("/")[2];
         String siteName = domain.startsWith("www.")?domain.substring(4):domain;
         if (siteRepository.existsByName(siteName)) {
-            site = siteRepository.findByName(siteName);
             new Thread(this::pageIndexing).start();
             Result result = new Result();
             result.setResult(true);
@@ -105,7 +104,7 @@ public class PageIndexer {
 
     private void indexCreator(Page page, Lemma lemma) {
         Index index = new Index(page, lemma);
-        if (!indexRepository.existsByLemmaIdAndPageId(lemma, page)) {
+        if (indexRepository.existsByLemmaIdAndPageId(lemma, page)) {
             indexRepository.save(index);
         } else {
             indexRepository.upRank(page.getId(), lemma.getId());
