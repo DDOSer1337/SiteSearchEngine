@@ -4,7 +4,7 @@ package searchengine.dto.searchByWord;
 public class Data {
     String site;
     String siteName;
-    String url;
+    String uri;
     String title;
     String snippet;
     float relevance;
