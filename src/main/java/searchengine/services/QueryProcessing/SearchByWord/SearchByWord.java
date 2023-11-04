@@ -7,7 +7,6 @@ import lombok.Setter;
 import org.apache.lucene.morphology.LuceneMorphology;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -101,7 +100,7 @@ public class SearchByWord {
         data.setSite(site.getUrl());
         data.setSiteName(site.getName());
         String path = page.getPath();
-        data.setUrl(path);
+        data.setUri(path);
         data.setSnippet(setSnippet(page.getContent(), correctWord));
         data.setTitle(setTitle(page.getContent()));
         data.setRelevance(reliance);
