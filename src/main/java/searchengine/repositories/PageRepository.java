@@ -13,7 +13,7 @@ public interface PageRepository extends CrudRepository<Page,Long> {
     Page findByPathAndSiteId_Name(String path, String name);
 
     @Transactional
-    long deleteByPath(String path);
+    void deleteByPath(String path);
 
     long countBySiteId_Name(String siteName);
 }
