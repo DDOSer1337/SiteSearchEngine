@@ -35,21 +35,19 @@ public class LemmaCreator {
             if (lemma != null) {
                 if (canStop) {
                     if (isIndexing.get()) {
-                        Optional<Lemma> optionalLemma = lemmaRepository.findByLemmaAndSiteId_name(lemma.getLemma(), site.getName());
-                        if (optionalLemma.isPresent()) {
-                            lemma = optionalLemma.get();
-                            list.add(lemma);
-                        }
+                        add2List(lemma);
                     }
                 } else {
-                    Optional<Lemma> optionalLemma = lemmaRepository.findByLemmaAndSiteId_name(lemma.getLemma(), site.getName());
-                    if (optionalLemma.isPresent()) {
-                        lemma = optionalLemma.get();
-                        list.add(lemma);
-                    }
+                    add2List(lemma);
                 }
             }
         });
+    }
+
+    private void add2List(Lemma lemma) {
+        lemmaRepository
+                .findByLemmaAndSiteId_name(lemma.getLemma(), site.getName())
+                .ifPresent(value -> list.add(value));
     }
 
     private Lemma createLemma(String textWord) {
