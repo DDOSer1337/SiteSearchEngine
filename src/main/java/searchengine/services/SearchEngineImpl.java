@@ -24,21 +24,8 @@ public class SearchEngineImpl implements SearchEngine {
         Result result = new Result();
         if (!word[0].isEmpty()) {
             result.setResult(true);
-            SuccessSearchResult successResult = new SuccessSearchResult();
-            successResult.setResult(result.isResult());
-            searchByWord.setWord(word);
-            searchByWord.setUrl(siteName);
-            searchByWord.startSearch();
-            successResult.setCount(searchByWord.getCount());
-            List<Data> data = new ArrayList<>();
-            List<Data> foundedData = searchByWord.getFoundedData();
-            for (int i = 0; i < 10; i++) {
-                int point = offset + i;
-                if (foundedData.size() > point) {
-                    data.add(foundedData.get(point));
-                }
-            }
-            successResult.setData(data);
+            startSearch(siteName, word);
+            SuccessSearchResult successResult = getSuccessSearchResult(offset, result);
             return ResponseEntity.status(HttpStatus.OK).body(successResult);
         } else {
             result.setResult(false);
@@ -47,5 +34,31 @@ public class SearchEngineImpl implements SearchEngine {
             failedResult.setError("Задан неверный поисковый запрос");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(failedResult);
         }
+    }
+
+    private void startSearch(String siteName, String[] word) {
+        searchByWord.setWord(word);
+        searchByWord.setUrl(siteName);
+        searchByWord.startSearch();
+    }
+
+    private SuccessSearchResult getSuccessSearchResult(int offset, Result result) {
+        SuccessSearchResult successResult = new SuccessSearchResult();
+        successResult.setResult(result.isResult());
+        successResult.setCount(searchByWord.getCount());
+        successResult.setData(getData(offset));
+        return successResult;
+    }
+
+    private List<Data> getData(int offset) {
+        List<Data> foundedData = searchByWord.getFoundedData();
+        List<Data> data = new ArrayList<>();
+        for (int i = 0; i < 10; i++) {
+            int point = offset + i;
+            if (foundedData.size() > point) {
+                data.add(foundedData.get(point));
+            }
+        }
+        return data;
     }
 }

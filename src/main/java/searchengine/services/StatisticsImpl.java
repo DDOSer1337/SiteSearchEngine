@@ -30,13 +30,6 @@ public class StatisticsImpl implements StatisticsService {
     @Autowired
     private final LemmaRepository lemmaRepository;
 
-    String[] statuses = {"INDEXED", "FAILED", "INDEXING"};
-    String[] errors = {
-            "Ошибка индексации: главная страница сайта не доступна",
-            "Ошибка индексации: сайт не доступен",
-            ""
-    };
-
     @Override
     public StatisticsResponse getStatistics() {
 
@@ -56,15 +49,14 @@ public class StatisticsImpl implements StatisticsService {
     }
 
     private DetailedStatisticsItem getDetailedStatisticsItem(searchengine.config.Site sites) {
-        DetailedStatisticsItem item;
-        Optional<Site> site = Optional.ofNullable(siteRepository.findByName(sites.getName()));
-        if (site.isPresent()) {
-            item = itemCreator(site.get().getStatusTime().getNano(), site.get().getSiteStatus().toString(), sites.getName(), site.get().getLastError(), site.get().getUrl(),
-                    (int) lemmaRepository.countBySiteId_Name(site.get().getName()), (int) pageRepository.countBySiteId_Name(site.get().getName()));
-        } else {
-            item = itemCreator(0, "", sites.getName(), "Ошибка, данные не обнаружены", sites.getUrl(), 0, 0);
-        }
-        return item;
+        return Optional.ofNullable(siteRepository.findByName(sites.getName()))
+                .map(value -> itemCreator(value.getStatusTime().getNano(),
+                        value.getSiteStatus().toString(),
+                        sites.getName(), value.getLastError(),
+                        value.getUrl(),
+                        (int) lemmaRepository.countBySiteId_Name(value.getName()),
+                        (int) pageRepository.countBySiteId_Name(value.getName()))).orElseGet(()
+                        -> itemCreator(0, "", sites.getName(), "Ошибка, данные не обнаружены", sites.getUrl(), 0, 0));
     }
 
     private DetailedStatisticsItem itemCreator(long statusTime, String siteStatus, String name, String lastError, String url, int lemmaCount, int pageCount) {
@@ -80,12 +72,10 @@ public class StatisticsImpl implements StatisticsService {
     }
 
     private StatisticsResponse getResponse(int sitesCount, long pageCount, long lemmaCount, List<DetailedStatisticsItem> detailed) {
-        TotalStatistics totalStatistics = getTotalStatistics(sitesCount, (int) pageCount, lemmaCount);
-
         StatisticsResponse response = new StatisticsResponse();
         StatisticsData data = new StatisticsData();
 
-        data.setTotal(totalStatistics);
+        data.setTotal(getTotalStatistics(sitesCount, (int) pageCount, lemmaCount));
         data.setDetailed(detailed);
 
         response.setStatistics(data);
